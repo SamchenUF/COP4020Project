@@ -15,12 +15,15 @@ import edu.ufl.cise.cop4020fa23.exceptions.LexicalException;
 
 public class Lexer implements ILexer {
 	String input;
-	
+	int sentinel;
+	int i; //position
 	private enum State {
 	START, HAVE_EQ;
 	}
 	public Lexer(String input) {
 		this.input = input;
+		sentinel = input.length();
+		i = 0;
 		
 	}
 
@@ -28,9 +31,10 @@ public class Lexer implements ILexer {
 	public IToken next() throws LexicalException {
 		State state = State.START;
 		int startPos;
-		int i = 0;
 		boolean temp = true;
-		if (input.length() == 0) {temp = false;}
+		if (sentinel == 0) {
+			temp = false;
+		}
 		while(temp) {
 			char current = input.charAt(i);
 			state = State.START;
@@ -41,29 +45,35 @@ public class Lexer implements ILexer {
 						case ' ', '\n', '\r' -> i++; 
 						case '+' -> {
 							i++;
-							new Token(Kind.PLUS, startPos, 1, null, new SourceLocation(1, 1));
-							
+							return new Token(Kind.PLUS, startPos, 1, null, new SourceLocation(1, 1));
+						}
+						case ',' -> {
+							i++;
+							return new Token(Kind.COMMA, startPos, 1, null, null);
 						}
 						case '=' -> {
 							i++;
 							state = State.HAVE_EQ;
-							
 						}
 						default -> {
 							temp = false;
 							throw new IllegalStateException("lexer bug");
 						}
 					}
-					if (i >= input.length()){temp = false;}
+					if (i >= sentinel){
+						temp = false;
+					}
 				}
 				case HAVE_EQ -> {
 					switch(current) {
 						case '=' -> {
-							new Token(Kind.EQ, startPos, 2, null, new SourceLocation(1, 1));
 							i++;
+							return new Token(Kind.EQ, startPos, 2, null, new SourceLocation(1, 1));
 						}
 					}
-					if (i >= input.length()){temp = false;}
+					if (i >= sentinel){
+						temp = false;
+					}
 				}
 				default -> {
 					temp = false;

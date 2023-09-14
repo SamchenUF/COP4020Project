@@ -545,4 +545,11 @@ class LexerTest {
      	checkIdent("false",lexer.next());
      	checkIdent("true",lexer.next());     	
     }
+
+	@Test
+	void test21() throws LexicalException {
+	String input = "+";
+		ILexer lexer = ComponentFactory.makeLexer(input);
+		checkToken(PLUS, lexer.next());
+	}	
 }
