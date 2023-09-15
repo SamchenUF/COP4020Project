@@ -11,75 +11,222 @@ package edu.ufl.cise.cop4020fa23;
 
 import static edu.ufl.cise.cop4020fa23.Kind.EOF;
 
+import java.nio.channels.IllegalSelectorException;
+
 import edu.ufl.cise.cop4020fa23.exceptions.LexicalException;
 
 public class Lexer implements ILexer {
 	String input;
 	int sentinel;
 	int i; //position
+	int row;
+	int column;
+	char[] arr;
 	private enum State {
-	START, HAVE_EQ;
+	START, HAVE_EQ, HAVE_AND, HAVE_LT, HAVE_GT, HAVE_STAR, HAVE_STRAIGHT, HAVE_LB, HAVE_COLON, HAVE_HASH, HAVE_DASH;
 	}
+	
 	public Lexer(String input) {
 		this.input = input;
 		sentinel = input.length();
 		i = 0;
-		
+		row = 1;
+		column = 0;
+		arr = input.toCharArray();
 	}
+
 
 	@Override
 	public IToken next() throws LexicalException {
 		State state = State.START;
-		int startPos;
+		int startPos = i;
 		boolean temp = true;
+		boolean newTok = true;
 		if (sentinel == 0) {
 			temp = false;
 		}
+		if (i >= sentinel) {
+				temp = false;
+			}
 		while(temp) {
 			char current = input.charAt(i);
-			state = State.START;
-			startPos = i;
+			if(newTok) {startPos = i;}
+			column++;
 			switch (state) {
 				case START -> {
 					switch(current) {
-						case ' ', '\n', '\r' -> i++; 
+						case ' ', '\n', '\r' -> {
+							i++;
+							if (current == ' ') {column++;};
+							if(current == '\n') {row++; column = 0;}
+						} 
 						case '+' -> {
 							i++;
-							return new Token(Kind.PLUS, startPos, 1, null, new SourceLocation(1, 1));
+							return new Token(Kind.PLUS, startPos, 1, arr, new SourceLocation(row, column));
 						}
 						case ',' -> {
 							i++;
-							return new Token(Kind.COMMA, startPos, 1, null, null);
+							return new Token(Kind.COMMA, startPos, 1, arr, new SourceLocation(row, column));
+						}
+						case ';' -> {
+							i++;
+							return new Token(Kind.SEMI, startPos, 1, arr, new SourceLocation(row, column));
+						}
+						case '?' -> {
+							i++;
+							return new Token(Kind.QUESTION, startPos, 1, arr, new SourceLocation(row, column));
+						}
+						case ':' -> {
+							i++;
+							if(i >= sentinel) {return new Token(Kind.COLON, startPos, 1, arr, new SourceLocation(row, column));}
+							else {newTok = false; state = State.HAVE_COLON;}
+						}
+						case '(' -> {
+							i++;
+							return new Token(Kind.LPAREN, startPos, 1, arr, new SourceLocation(row, column));
+						}
+						case ')' -> {
+							i++;
+							return new Token(Kind.RPAREN, startPos, 1, arr, new SourceLocation(row, column));
+						}
+						case '[' -> {
+							i++;
+							if(i >= sentinel) {return new Token(Kind.LSQUARE, startPos, 1, arr, new SourceLocation(row, column));}
+							else {newTok = false; state = State.HAVE_LB;}
+							
+						}
+						case ']' -> {
+							i++;
+							return new Token(Kind.RSQUARE, startPos, 1, arr, new SourceLocation(row, column));
+						}
+						case '<' -> {
+							i++;
+							if(i >= sentinel) {return new Token(Kind.LT, startPos, 1, arr, new SourceLocation(row, column));}
+							else{newTok = false; state = State.HAVE_LT;}
+							
+						}
+						case '>' -> {
+							i++;
+							if(i >= sentinel) {return new Token(Kind.GT, startPos, 1, arr, new SourceLocation(row, column));}
+							else{newTok = false; state = State.HAVE_GT;}
 						}
 						case '=' -> {
 							i++;
-							state = State.HAVE_EQ;
+							if(i >= sentinel) {return new Token(Kind.ASSIGN, startPos, 1, arr, new SourceLocation(row, column));}
+							else{newTok = false; state = State.HAVE_EQ;}
+						}
+						case '&'-> {
+							i++;
+							if(i >= sentinel) {return new Token(Kind.BITAND, startPos, 1, arr, new SourceLocation(row, column));}
+							else{newTok = false; state = State.HAVE_AND;}
+						}
+						case '%' -> {
+							i++;
+							return new Token(Kind.MOD, startPos, 1, arr, new SourceLocation(row, column));
+							}
+						case '#' -> {
+							i++;
+							if (input.charAt(i) == '#' ){i++; state = State.HAVE_HASH;}
+							else {throw new IllegalStateException("not comment");}
+						}
+						case '/' -> {
+							i++;
+							return new Token(Kind.DIV, startPos, current, arr, new SourceLocation(row, column));
+						}
+						case '-' -> {
+							i++;
+							if(i >= sentinel) {return new Token(Kind.MINUS, startPos, 1, arr, new SourceLocation(row, column));}
+							else{newTok = false; state = State.HAVE_DASH;}
 						}
 						default -> {
-							temp = false;
 							throw new IllegalStateException("lexer bug");
 						}
 					}
-					if (i >= sentinel){
-						temp = false;
+				}
+				case HAVE_DASH -> {
+					newTok = true;
+					if(current == '>') {
+						i++;
+						return new Token(Kind.RARROW, startPos, current, arr, new SourceLocation(row, column));
+					}
+					else {
+						state = State.START;
+						return new Token(Kind.MINUS, startPos, current, arr, new SourceLocation(row, column));
 					}
 				}
+				case HAVE_GT -> {
+					newTok = true;
+					if(current == '=') {
+						i++;
+						return new Token(Kind.GE, startPos, current, arr, new SourceLocation(row, column));
+					}
+					else {return new Token(Kind.GT, startPos, current, arr, new SourceLocation(row, column));}
+				}
+				case HAVE_LT -> {
+					newTok = true;
+					if(current == '=') {
+						i++;
+						return new Token(Kind.LE, startPos, current, arr, new SourceLocation(row, column));
+					}
+					else if(current == ':') {
+						i++;
+						return new Token(Kind.BLOCK_OPEN, startPos, current, arr, new SourceLocation(row, column));
+					}
+					else{return new Token(Kind.LT, startPos, current, arr, new SourceLocation(row, column));}
+				}
+				case HAVE_HASH -> {
+					newTok = true;
+					if (current == '\n') {state = State.START;}
+					i++;
+					}
 				case HAVE_EQ -> {
+					newTok = true;
 					switch(current) {
 						case '=' -> {
 							i++;
-							return new Token(Kind.EQ, startPos, 2, null, new SourceLocation(1, 1));
+							state = State.START;
+							return new Token(Kind.EQ, startPos, 2, arr, new SourceLocation(row, column));
+						}
+						default -> {
+							state = State.START;
+							return new Token(Kind.ASSIGN, startPos, 1, arr, new SourceLocation(row, column-1));
 						}
 					}
-					if (i >= sentinel){
-						temp = false;
+				}
+				case HAVE_AND -> {
+					newTok = true;
+					switch(current) {
+						case '&' -> {
+							i++;
+							state = State.START;
+							return new Token(Kind.AND, startPos, 2, arr, new SourceLocation(row, column));
+						}
+						default -> {
+							state = State.START;
+							return new Token(Kind.BITAND,startPos, 1, arr, new SourceLocation(row, column-1));
+						}
+					}
+				}
+				case HAVE_LB -> {
+					newTok = true;
+					switch(current) {
+						case ']' -> {
+							i++;
+							state = State.START;
+							return new Token(Kind.BOX, startPos, 2, arr, new SourceLocation(row, column));
+						}
+						default -> {
+							state = State.START;
+							return new Token(Kind.LSQUARE, startPos, 1, arr, new SourceLocation(row, column-1));
+						}
 					}
 				}
 				default -> {
-					temp = false;
-					System.out.println(i);
 					throw new IllegalStateException("lexer bug");
 				}
+			}
+			if (i >= sentinel) {
+				temp = false;
 			}
 		}
 		return new Token(EOF, 0, 0, null, new SourceLocation(1, 1));
