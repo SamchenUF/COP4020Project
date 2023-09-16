@@ -134,10 +134,10 @@ public class Lexer implements ILexer {
 			throw new LexicalException("Unclosed string literal", pos);
 		}
 		pos++;
-		String lexeme = input.substring(startPos, pos);
-		char[] lexemeCharArray = lexeme.toCharArray();
+		//String lexeme = input.substring(startPos, pos);
+		//char[] lexemeCharArray = lexeme.toCharArray();
 		currentPos = pos;  // Update the current position here
-		return new Token(Kind.STRING_LIT, startPos, pos, lexemeCharArray, new SourceLocation(1, 1));
+		return new Token(Kind.STRING_LIT, startPos, pos-startPos, input.toCharArray(), new SourceLocation(1, 1));
 	}
 
 
