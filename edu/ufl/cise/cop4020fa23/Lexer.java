@@ -23,7 +23,7 @@ public class Lexer implements ILexer {
 	int column;
 	char[] arr;
 	private enum State {
-	START, HAVE_EQ, HAVE_AND, HAVE_LT, HAVE_GT, HAVE_STAR, HAVE_STRAIGHT, HAVE_LB, HAVE_COLON, HAVE_HASH, HAVE_DASH;
+	START, HAVE_EQ, HAVE_AND, HAVE_LT, HAVE_GT, HAVE_STAR, HAVE_STRAIGHT, HAVE_LB, HAVE_COLON, HAVE_HASH, HAVE_DASH, HAVE_OR;
 	}
 	
 	public Lexer(String input) {
@@ -62,7 +62,7 @@ public class Lexer implements ILexer {
 						} 
 						case '+' -> {
 							i++;
-							return new Token(Kind.PLUS, startPos, 1, arr, new SourceLocation(row, column));
+							return new Token(Kind.PLUS, startPos, 1, arr, new SourceLocation(row, i));
 						}
 						case ',' -> {
 							i++;
@@ -131,15 +131,56 @@ public class Lexer implements ILexer {
 						}
 						case '/' -> {
 							i++;
-							return new Token(Kind.DIV, startPos, current, arr, new SourceLocation(row, column));
+							System.out.println("Running");
+							return new Token(Kind.DIV, startPos, 1, arr, new SourceLocation(row, column));
 						}
 						case '-' -> {
 							i++;
 							if(i >= sentinel) {return new Token(Kind.MINUS, startPos, 1, arr, new SourceLocation(row, column));}
 							else{newTok = false; state = State.HAVE_DASH;}
 						}
+						case '!' -> {
+							i++;
+							return new Token(Kind.BANG, startPos, 1, arr, new SourceLocation(row, column));
+							}
+						case '|'-> {
+							i++;
+							if(i >= sentinel) {return new Token(Kind.BITOR, startPos, 1, arr, new SourceLocation(row, column));}
+							else{newTok = false; state = State.HAVE_OR;}
+						}
+						case '*'-> {
+							i++;
+							if(i >= sentinel) {return new Token(Kind.TIMES, startPos, 1, arr, new SourceLocation(row, column));}
+							else{newTok = false; state = State.HAVE_STAR;}
+						}
 						default -> {
 							throw new IllegalStateException("lexer bug");
+						}
+					}
+				}
+				case HAVE_STAR -> {
+					newTok = true;
+					switch(current) {
+						case '*' -> {
+							i++;
+							return new Token(Kind.EXP, startPos, 2, arr, new SourceLocation(row, column));
+						}
+						default -> {
+							return new Token(Kind.TIMES, startPos, 1, arr, new SourceLocation(row, column-1));
+						}
+					}
+				}
+				case HAVE_OR -> {
+					newTok = true;
+					switch(current) {
+						case '|' -> {
+							i++;
+							//state = State.START;
+							return new Token(Kind.OR, startPos, 2, arr, new SourceLocation(row, column));
+						}
+						default -> {
+							//state = State.START;
+							return new Token(Kind.BITOR, startPos, 1, arr, new SourceLocation(row, column-1));
 						}
 					}
 				}
@@ -150,7 +191,7 @@ public class Lexer implements ILexer {
 						return new Token(Kind.RARROW, startPos, current, arr, new SourceLocation(row, column));
 					}
 					else {
-						state = State.START;
+						//state = State.START;
 						return new Token(Kind.MINUS, startPos, current, arr, new SourceLocation(row, column));
 					}
 				}
@@ -175,8 +216,7 @@ public class Lexer implements ILexer {
 					else{return new Token(Kind.LT, startPos, current, arr, new SourceLocation(row, column));}
 				}
 				case HAVE_HASH -> {
-					newTok = true;
-					if (current == '\n') {state = State.START;}
+					if (current == '\n') {newTok = true; state = State.START;}
 					i++;
 					}
 				case HAVE_EQ -> {
@@ -184,11 +224,11 @@ public class Lexer implements ILexer {
 					switch(current) {
 						case '=' -> {
 							i++;
-							state = State.START;
+							//state = State.START;
 							return new Token(Kind.EQ, startPos, 2, arr, new SourceLocation(row, column));
 						}
 						default -> {
-							state = State.START;
+							//state = State.START;
 							return new Token(Kind.ASSIGN, startPos, 1, arr, new SourceLocation(row, column-1));
 						}
 					}
@@ -198,11 +238,11 @@ public class Lexer implements ILexer {
 					switch(current) {
 						case '&' -> {
 							i++;
-							state = State.START;
+							//state = State.START;
 							return new Token(Kind.AND, startPos, 2, arr, new SourceLocation(row, column));
 						}
 						default -> {
-							state = State.START;
+							//state = State.START;
 							return new Token(Kind.BITAND,startPos, 1, arr, new SourceLocation(row, column-1));
 						}
 					}
@@ -212,11 +252,11 @@ public class Lexer implements ILexer {
 					switch(current) {
 						case ']' -> {
 							i++;
-							state = State.START;
+							//state = State.START;
 							return new Token(Kind.BOX, startPos, 2, arr, new SourceLocation(row, column));
 						}
 						default -> {
-							state = State.START;
+							//state = State.START;
 							return new Token(Kind.LSQUARE, startPos, 1, arr, new SourceLocation(row, column-1));
 						}
 					}

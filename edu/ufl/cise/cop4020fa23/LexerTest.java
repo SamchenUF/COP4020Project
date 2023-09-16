@@ -548,8 +548,17 @@ class LexerTest {
 
 	@Test
 	void test21() throws LexicalException {
-	String input = "[";
+		String input = """
+				& && 
+				&&& &&&&
+				""";
 		ILexer lexer = ComponentFactory.makeLexer(input);
-		checkToken(LSQUARE, lexer.next());
-	}	
+		checkToken(BITAND, "&", lexer.next());
+		checkToken(AND, "&&", lexer.next());
+		checkToken(AND, "&&", lexer.next());
+		checkToken(BITAND, "&", lexer.next());
+		checkToken(AND, "&&",  lexer.next());
+		checkToken(AND, "&&",  lexer.next());
+		checkEOF(lexer.next());
+	}
 }
