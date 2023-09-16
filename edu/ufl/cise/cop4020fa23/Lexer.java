@@ -111,7 +111,8 @@ public class Lexer implements ILexer {
 		int startPos = pos;
 		int length = 1;
 		if (input.charAt(pos) == '0') {
-			//currentPos = pos + 1;  // Update the current position here
+			pos++;
+			currentPos = pos;  // Update the current position here
 			return new Token(Kind.NUM_LIT, startPos, 1, input.toCharArray(), new SourceLocation(1, 1));
 		}
 		pos++;
