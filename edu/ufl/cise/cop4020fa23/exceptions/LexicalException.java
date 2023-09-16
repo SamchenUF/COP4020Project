@@ -29,5 +29,7 @@ public class LexicalException extends PLCCompilerException {
 	public LexicalException(SourceLocation location, String message) {
 		super(location, message);
 	}
+	public LexicalException(String s, int pos) {
+	}
 
 }
