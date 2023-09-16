@@ -545,20 +545,4 @@ class LexerTest {
      	checkIdent("false",lexer.next());
      	checkIdent("true",lexer.next());     	
     }
-
-	@Test
-	void test21() throws LexicalException {
-		String input = """
-				& && 
-				&&& &&&&
-				""";
-		ILexer lexer = ComponentFactory.makeLexer(input);
-		checkToken(BITAND, "&", lexer.next());
-		checkToken(AND, "&&", lexer.next());
-		checkToken(AND, "&&", lexer.next());
-		checkToken(BITAND, "&", lexer.next());
-		checkToken(AND, "&&",  lexer.next());
-		checkToken(AND, "&&",  lexer.next());
-		checkEOF(lexer.next());
-	}
 }

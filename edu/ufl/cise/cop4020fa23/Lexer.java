@@ -109,20 +109,21 @@ public class Lexer implements ILexer {
 
 	private IToken number(int pos) {
 		int startPos = pos;
+		int length = 1;
 		if (input.charAt(pos) == '0') {
-			currentPos = pos + 1;  // Update the current position here
-			return new Token(Kind.NUM_LIT, startPos, pos + 1, "0".toCharArray(), new SourceLocation(1, 1));
+			//currentPos = pos + 1;  // Update the current position here
+			return new Token(Kind.NUM_LIT, startPos, 1, input.toCharArray(), new SourceLocation(1, 1));
 		}
 		pos++;
 		while (pos < input.length() && isDigit(input.charAt(pos))) {
-			pos++;
-		}
-		String lexeme = input.substring(startPos, pos);
-		char[] lexemeCharArray = lexeme.toCharArray();
+				pos++;
+				length++;
+			}
+		//String lexeme = input.substring(startPos, pos);
+		//char[] lexemeCharArray = lexeme.toCharArray();
 		currentPos = pos;  // Update the current position here
-		return new Token(Kind.NUM_LIT, startPos, pos, lexemeCharArray, new SourceLocation(1, 1));
+		return new Token(Kind.NUM_LIT, startPos, length, input.toCharArray(), new SourceLocation(1, 1));
 	}
-
 	private IToken stringLit(int pos) throws LexicalException {
 		int startPos = pos;
 		pos++;
