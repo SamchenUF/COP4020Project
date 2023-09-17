@@ -1,7 +1,8 @@
 package edu.ufl.cise.cop4020fa23;
 import static edu.ufl.cise.cop4020fa23.Kind.EOF;
-//import java.nio.channels.IllegalSelectorException;
+import java.nio.channels.IllegalSelectorException;
 import edu.ufl.cise.cop4020fa23.exceptions.LexicalException;
+import java.math.BigInteger;
 
 public class Lexer implements ILexer {
 	String input;
@@ -13,7 +14,7 @@ public class Lexer implements ILexer {
 	private enum State {
 		START, HAVE_EQ, HAVE_AND, HAVE_LT, HAVE_GT, HAVE_STAR, HAVE_STRAIGHT, HAVE_LB, HAVE_COLON, HAVE_HASH, HAVE_DASH, HAVE_OR, HAVE_DIGIT;
 	}
-
+	boolean newRow = false;
 	public Lexer(String input) {
 		this.input = input;
 		sentinel = input.length();
@@ -37,8 +38,8 @@ public class Lexer implements ILexer {
 		while(temp) {
 			char current = input.charAt(i);
 			if(newTok) {startPos = i;}
-			column++;
-
+			if(!newRow) {column++;}
+			newRow = false;
 			switch (state) {
 
 				case START -> {
@@ -48,9 +49,17 @@ public class Lexer implements ILexer {
 						case ' ', '\n', '\r' -> {
 							i++;
 							if (current == ' ') {column++;};
-							if(current == '\n') {row++; column = 1;}
+							if(current == '\n') {
+								row++; 
+								column = 1;
+								newRow = true;
+							}
 						} 
 						case '0' -> {
+							i++;
+							return new Token(Kind.NUM_LIT, startPos, 1, arr, new SourceLocation(row, column));
+						}
+						case '1', '2', '3', '4', '5', '6', '7', '8', '9' -> {
 							i++;
 							if(i >= sentinel) {return new Token(Kind.NUM_LIT, startPos, 1, arr, new SourceLocation(row, column));}
 							else {newTok = false; state = State.HAVE_DIGIT;}
@@ -255,9 +264,20 @@ public class Lexer implements ILexer {
 						}
 					}
 				}
-				case HAVE_DIGIT -> { //temp code
-					i++;
-					return new Token(Kind.NUM_LIT, startPos, 1, arr, new SourceLocation(row, column));
+				case HAVE_DIGIT -> { //temp code\
+					if(current >= '0' && current <= '9') {
+						i++;
+					}
+					else {
+						BigInteger maxInt = BigInteger.valueOf(Integer.MAX_VALUE);
+						BigInteger stringValue = new BigInteger(String.copyValueOf(input.toCharArray(), startPos, i - startPos));
+						if(stringValue.compareTo(maxInt) > 0) {
+							throw new LexicalException("Num too big");
+						}
+						else {
+						return new Token(Kind.NUM_LIT, startPos, i-startPos, arr, new SourceLocation(row, column));
+						}
+					}
 				}
 				default -> {
 					throw new IllegalStateException("lexer bug");
