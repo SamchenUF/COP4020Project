@@ -24,7 +24,6 @@ public class Lexer implements ILexer {
 	}
 	Set<String> constant_Set = new HashSet<String>(Set.of("Z", "BLACK", "BLUE", "CYAN", "DARK_GRAY", "GRAY", "GREEN", "LIGHT_GRAY", "MAGENTA", "ORANGE", "PINK", "RED", "WHITE", "YELLOW"));
 	Set<String> boolean_Set = new HashSet<String>(Set.of("TRUE", "FALSE"));
-	boolean newRow = false;
 	public Lexer(String input) {
 		this.input = input;
 		sentinel = input.length();
