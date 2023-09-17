@@ -1,6 +1,9 @@
 package edu.ufl.cise.cop4020fa23;
 import static edu.ufl.cise.cop4020fa23.Kind.EOF;
 import java.nio.channels.IllegalSelectorException;
+import java.util.HashSet;
+import java.util.Set;
+
 import edu.ufl.cise.cop4020fa23.exceptions.LexicalException;
 import java.math.BigInteger;
 
@@ -14,6 +17,8 @@ public class Lexer implements ILexer {
 	private enum State {
 		START, HAVE_EQ, HAVE_AND, HAVE_LT, HAVE_GT, HAVE_STAR, HAVE_STRAIGHT, HAVE_LB, HAVE_COLON, HAVE_HASH, HAVE_DASH, HAVE_OR, HAVE_DIGIT, HAVE_ALPHA;
 	}
+	Set<String> constant_Set = new HashSet<String>(Set.of("Z", "BLACK", "BLUE", "CYAN", "DARK_GRAY", "GRAY", "GREEN", "LIGHT_GRAY", "MAGENTA", "ORANGE", "PINK", "RED", "WHITE", "YELLOW"));
+	Set<String> boolean_Set = new HashSet<String>(Set.of("TRUE", "FALSE"));
 	boolean newRow = false;
 	public Lexer(String input) {
 		this.input = input;
@@ -23,6 +28,13 @@ public class Lexer implements ILexer {
 		column = 0;
 		arr = input.toCharArray();
 	}
+	public boolean isAlphaNumericUnder(char c) {
+		if ((c >= '0' & c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_')
+		  return true;
+		return false;
+	  }
+	
+
 	@Override
 	public IToken next() throws LexicalException {
 		State state = State.START;
@@ -56,8 +68,10 @@ public class Lexer implements ILexer {
 								newRow = true;
 							}
 						} 
-						case 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' -> {
-							
+						case 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '_' -> {
+							i++;
+							if(i >= sentinel) {return new Token(Kind.IDENT, startPos, 1, arr, new SourceLocation(row, column));}
+							else {newTok = false; state = State.HAVE_ALPHA;}
 						}
 						case '0' -> {
 							i++;
@@ -135,7 +149,7 @@ public class Lexer implements ILexer {
 						case '#' -> {
 							i++;
 							if (input.charAt(i) == '#' ){i++; state = State.HAVE_HASH;}
-							else {throw new IllegalStateException("not comment");}
+							else {throw new LexicalException("not comment");}
 						}
 						case '/' -> {
 							i++;
@@ -161,8 +175,24 @@ public class Lexer implements ILexer {
 							else{newTok = false; state = State.HAVE_STAR;}
 						}
 						default -> {
-							throw new IllegalStateException("lexer bug");
+							throw new LexicalException("Not valid input");
 						}
+					}
+				}
+				case HAVE_ALPHA -> {
+					if(isAlphaNumericUnder(current)) {
+						i++;
+					}
+
+					else {
+						if(boolean_Set.contains(String.copyValueOf(arr, startPos, i-startPos))) {
+							return new Token(Kind.BOOLEAN_LIT, startPos, i-startPos, arr, new SourceLocation(row, column));
+						}
+						else if(constant_Set.contains(String.copyValueOf(arr, startPos, i-startPos))) {
+							return new Token(Kind.CONST, startPos, i-startPos, arr, new SourceLocation(row, column));
+						}
+						else
+							return new Token(Kind.IDENT, startPos, i-startPos, arr, new SourceLocation(row, column));
 					}
 				}
 				case HAVE_STAR -> {
