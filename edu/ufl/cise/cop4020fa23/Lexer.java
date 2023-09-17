@@ -1,6 +1,6 @@
 package edu.ufl.cise.cop4020fa23;
 import static edu.ufl.cise.cop4020fa23.Kind.EOF;
-import java.nio.channels.IllegalSelectorException;
+//import java.nio.channels.IllegalSelectorException;
 import edu.ufl.cise.cop4020fa23.exceptions.LexicalException;
 
 public class Lexer implements ILexer {
@@ -47,12 +47,13 @@ public class Lexer implements ILexer {
 
 						case ' ', '\n', '\r' -> {
 							i++;
-							if(i >= sentinel) {return new Token(Kind.NUM_LIT, startPos, 1, arr, new SourceLocation(row, column));}
-							else {newTok = false; state = State.HAVE_DIGIT;}
+							if (current == ' ') {column++;};
+							if(current == '\n') {row++; column = 1;}
 						} 
 						case '0' -> {
 							i++;
-							state = State.HAVE_DIGIT;
+							if(i >= sentinel) {return new Token(Kind.NUM_LIT, startPos, 1, arr, new SourceLocation(row, column));}
+							else {newTok = false; state = State.HAVE_DIGIT;}
 						}
 						case '+' -> {
 							i++;
@@ -253,6 +254,10 @@ public class Lexer implements ILexer {
 							return new Token(Kind.LSQUARE, startPos, 1, arr, new SourceLocation(row, column-1));
 						}
 					}
+				}
+				case HAVE_DIGIT -> { //temp code
+					i++;
+					return new Token(Kind.NUM_LIT, startPos, 1, arr, new SourceLocation(row, column));
 				}
 				default -> {
 					throw new IllegalStateException("lexer bug");
