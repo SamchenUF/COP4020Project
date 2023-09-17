@@ -4,6 +4,9 @@ import java.nio.channels.IllegalSelectorException;
 import java.util.HashSet;
 import java.util.Set;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import edu.ufl.cise.cop4020fa23.exceptions.LexicalException;
 import java.math.BigInteger;
 
@@ -21,7 +24,7 @@ public class Lexer implements ILexer {
 	}
 	Set<String> constant_Set = new HashSet<String>(Set.of("Z", "BLACK", "BLUE", "CYAN", "DARK_GRAY", "GRAY", "GREEN", "LIGHT_GRAY", "MAGENTA", "ORANGE", "PINK", "RED", "WHITE", "YELLOW"));
 	Set<String> boolean_Set = new HashSet<String>(Set.of("TRUE", "FALSE"));
-	
+	boolean newRow = false;
 	public Lexer(String input) {
 		this.input = input;
 		sentinel = input.length();
@@ -183,15 +186,14 @@ public class Lexer implements ILexer {
 				case HAVE_ALPHA -> {
 					if(isAlphaNumericUnder(current)) {
 						i++;
-						column++;
 					}
 
 					else {
 						if(boolean_Set.contains(String.copyValueOf(arr, startPos, i-startPos))) {
-							return new Token(Kind.BOOLEAN_LIT, startPos, i-startPos, arr, new SourceLocation(row, column - (i-startPos)));
+							return new Token(Kind.BOOLEAN_LIT, startPos, i-startPos, arr, new SourceLocation(row, column));
 						}
 						else if(constant_Set.contains(String.copyValueOf(arr, startPos, i-startPos))) {
-							return new Token(Kind.CONST, startPos, i-startPos, arr, new SourceLocation(row, column - (i-startPos)));
+							return new Token(Kind.CONST, startPos, i-startPos, arr, new SourceLocation(row, column));
 						}
 						else
 							return new Token(Kind.IDENT, startPos, i-startPos, arr, new SourceLocation(row, column - (i-startPos)));
