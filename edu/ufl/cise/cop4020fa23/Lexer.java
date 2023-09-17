@@ -12,7 +12,7 @@ public class Lexer implements ILexer {
 	int column;
 	char[] arr;
 	private enum State {
-		START, HAVE_EQ, HAVE_AND, HAVE_LT, HAVE_GT, HAVE_STAR, HAVE_STRAIGHT, HAVE_LB, HAVE_COLON, HAVE_HASH, HAVE_DASH, HAVE_OR, HAVE_DIGIT;
+		START, HAVE_EQ, HAVE_AND, HAVE_LT, HAVE_GT, HAVE_STAR, HAVE_STRAIGHT, HAVE_LB, HAVE_COLON, HAVE_HASH, HAVE_DASH, HAVE_OR, HAVE_DIGIT, HAVE_ALPHA;
 	}
 	boolean newRow = false;
 	public Lexer(String input) {
@@ -40,6 +40,7 @@ public class Lexer implements ILexer {
 			if(newTok) {startPos = i;}
 			if(!newRow) {column++;}
 			newRow = false;
+
 			switch (state) {
 
 				case START -> {
@@ -55,6 +56,9 @@ public class Lexer implements ILexer {
 								newRow = true;
 							}
 						} 
+						case 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' -> {
+							
+						}
 						case '0' -> {
 							i++;
 							return new Token(Kind.NUM_LIT, startPos, 1, arr, new SourceLocation(row, column));
