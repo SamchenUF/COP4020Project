@@ -13,6 +13,7 @@ public class Lexer implements ILexer {
 	int row;
 	int column;
 	char[] arr;
+	char current;
 	boolean newRow = true;
 	int tempColumn;
 	private enum State {
@@ -51,14 +52,18 @@ public class Lexer implements ILexer {
 				temp = false;
 			}
 		while(temp) {
-			char current = input.charAt(i);
+			if (i >= sentinel) {
+				temp = false;
+			}
+			if(temp) {
+			current = input.charAt(i);
+			}
 			if(newTok) {startPos = i;}
 			newRow = false;
 			
 			switch (state) {
 
 				case START -> {
-					column++;
 					switch(current) {
 
 						case ' ', '\n', '\r' -> {
@@ -66,7 +71,7 @@ public class Lexer implements ILexer {
 							
 							if(current == '\n') {
 								row++; 
-								column = 1;
+								column = 0;
 								newRow = true;
 							}
 						}
@@ -185,9 +190,13 @@ public class Lexer implements ILexer {
 							throw new LexicalException("Not valid input");
 						}
 					}
+					column++;
 				}
 				case HAVE_SLIT -> {
 					i++;
+					if(current == '\n') {
+						throw new LexicalException("Illegal new line in string");
+					}
 					if(current == '"') {
 						column++;
 						return new Token(Kind.STRING_LIT, startPos, i-startPos, arr, new SourceLocation(row, column - (i-startPos)));
@@ -197,7 +206,7 @@ public class Lexer implements ILexer {
 					}
 				}
 				case HAVE_ALPHA -> {
-					if(isAlphaNumericUnder(current)) {
+					if(isAlphaNumericUnder(current) && i < sentinel) {
 						i++;
 					}
 
@@ -371,13 +380,13 @@ public class Lexer implements ILexer {
 					}
 				}
 				case HAVE_DIGIT -> { 
-					if(current >= '0' && current <= '9') {
+					if(current >= '0' && current <= '9' && i < sentinel) {
 						i++;
 						column++;
 					}
 					else {
 						BigInteger maxInt = BigInteger.valueOf(Integer.MAX_VALUE);
-						BigInteger stringValue = new BigInteger(String.copyValueOf(input.toCharArray(), startPos, i - startPos));
+						BigInteger stringValue = new BigInteger(String.copyValueOf(arr, startPos, i - startPos));
 						if(stringValue.compareTo(maxInt) > 0) {
 							throw new LexicalException("Num too big");
 						}
@@ -389,9 +398,6 @@ public class Lexer implements ILexer {
 				default -> {
 					throw new IllegalStateException("lexer bug");
 				}
-			}
-			if (i >= sentinel) {
-				temp = false;
 			}
 		}
 		return new Token(EOF, 0, 0, null, new SourceLocation(row, column));

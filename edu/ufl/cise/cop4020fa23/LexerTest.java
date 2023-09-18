@@ -545,4 +545,51 @@ class LexerTest {
      	checkIdent("false",lexer.next());
      	checkIdent("true",lexer.next());     	
     }
+
+	@Test
+void unitTestColumn() throws LexicalException {
+   String input = ",;";
+   ILexer lexer = ComponentFactory.makeLexer(input);
+   checkToken(COMMA, ",", 1, 1, lexer.next());
+   checkToken(SEMI, ";", 1, 2, lexer.next());
+   checkEOF(lexer.next());
+}
+
+
+@Test
+void unitTestRepeatedEOF() throws LexicalException {
+   String input = ",";
+   ILexer lexer = ComponentFactory.makeLexer(input);
+   checkToken(COMMA, ",", 1, 1, lexer.next());
+   checkEOF(lexer.next());
+   checkEOF(lexer.next());
+   checkEOF(lexer.next());
+}
+
+
+@Test
+void unitTestEmptyString() throws LexicalException {
+   String input = "\"\"";
+   ILexer lexer = ComponentFactory.makeLexer(input);
+   checkString("", lexer.next());
+}
+
+
+@Test
+void unitTestMultiLineString() {
+   String input = "\"value\n\"";
+   ILexer lexer = ComponentFactory.makeLexer(input);
+   LexicalException e = assertThrows(LexicalException.class, () -> lexer.next());
+   show("Error message from unitTestMultiLineString: " + e.getMessage());
+}
+
+
+@Test
+void unitTestInvalidString() {
+   String input = "\"31";
+   ILexer lexer = ComponentFactory.makeLexer(input);
+   LexicalException e = assertThrows(LexicalException.class, () -> lexer.next());
+   show("Error message from unitTestInvalidString: " + e.getMessage());
+}
+
 }
