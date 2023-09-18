@@ -3,10 +3,6 @@ import static edu.ufl.cise.cop4020fa23.Kind.EOF;
 import java.nio.channels.IllegalSelectorException;
 import java.util.HashSet;
 import java.util.Set;
-
-import java.util.HashSet;
-import java.util.Set;
-
 import edu.ufl.cise.cop4020fa23.exceptions.LexicalException;
 import java.math.BigInteger;
 
