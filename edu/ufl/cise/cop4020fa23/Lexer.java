@@ -20,10 +20,11 @@ public class Lexer implements ILexer {
 	boolean newRow = true;
 	int tempColumn;
 	private enum State {
-		START, HAVE_EQ, HAVE_AND, HAVE_LT, HAVE_GT, HAVE_STAR, HAVE_STRAIGHT, HAVE_LB, HAVE_COLON, HAVE_HASH, HAVE_DASH, HAVE_OR, HAVE_DIGIT, HAVE_ALPHA;
+		START, HAVE_EQ, HAVE_AND, HAVE_LT, HAVE_GT, HAVE_STAR, HAVE_STRAIGHT, HAVE_LB, HAVE_COLON, HAVE_HASH, HAVE_DASH, HAVE_OR, HAVE_DIGIT, HAVE_ALPHA, HAVE_SLIT;
 	}
 	Set<String> constant_Set = new HashSet<String>(Set.of("Z", "BLACK", "BLUE", "CYAN", "DARK_GRAY", "GRAY", "GREEN", "LIGHT_GRAY", "MAGENTA", "ORANGE", "PINK", "RED", "WHITE", "YELLOW"));
 	Set<String> boolean_Set = new HashSet<String>(Set.of("TRUE", "FALSE"));
+	Set<String> reserved_Set = new HashSet<String>(Set.of("image", "pixel", "int", "string", "void", "boolean", "write", "height", "width", "if",  "fi", "do", "od", "red", "green", "blue"));
 	public Lexer(String input) {
 		this.input = input;
 		sentinel = input.length();
@@ -70,7 +71,12 @@ public class Lexer implements ILexer {
 								column = 1;
 								newRow = true;
 							}
-						} 
+						}
+						case '"' -> {
+							i++;
+							if(i >= sentinel) {throw new LexicalException("Unclosed string lit");}
+							else {newTok = false; state = State.HAVE_SLIT;}
+						}
 						case 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '_' -> {
 							i++;
 							if(i >= sentinel) {return new Token(Kind.IDENT, startPos, 1, arr, new SourceLocation(row, column-1));}
@@ -182,6 +188,16 @@ public class Lexer implements ILexer {
 						}
 					}
 				}
+				case HAVE_SLIT -> {
+					i++;
+					if(current == '"') {
+						column++;
+						return new Token(Kind.STRING_LIT, startPos, i-startPos, arr, new SourceLocation(row, column - (i-startPos)));
+					}
+					if(i >= sentinel) {
+						throw new LexicalException("Unclosed string lit");
+					}
+				}
 				case HAVE_ALPHA -> {
 					if(isAlphaNumericUnder(current)) {
 						i++;
@@ -189,10 +205,62 @@ public class Lexer implements ILexer {
 
 					else {
 						if(boolean_Set.contains(String.copyValueOf(arr, startPos, i-startPos))) {
-							return new Token(Kind.BOOLEAN_LIT, startPos, i-startPos, arr, new SourceLocation(row, column));
+							return new Token(Kind.BOOLEAN_LIT, startPos, i-startPos, arr, new SourceLocation(row, column - (i-startPos)));
 						}
 						else if(constant_Set.contains(String.copyValueOf(arr, startPos, i-startPos))) {
-							return new Token(Kind.CONST, startPos, i-startPos, arr, new SourceLocation(row, column));
+							return new Token(Kind.CONST, startPos, i-startPos, arr, new SourceLocation(row, column - (i-startPos)));
+						}
+						else if(reserved_Set.contains(String.copyValueOf(arr, startPos, i-startPos))) {
+							switch(String.copyValueOf(arr, startPos, i-startPos)) {
+								case "image" -> {
+									return new Token(Kind.RES_image, startPos, i-startPos, arr, new SourceLocation(row, column - (i-startPos)));
+								}
+								case "pixel" -> {
+									return new Token(Kind.RES_pixel, startPos, i-startPos, arr, new SourceLocation(row, column - (i-startPos)));
+								}
+								case "int" -> {
+									return new Token(Kind.RES_int, startPos, i-startPos, arr, new SourceLocation(row, column - (i-startPos)));
+								}
+								case "string" -> {
+									return new Token(Kind.RES_string, startPos, i-startPos, arr, new SourceLocation(row, column - (i-startPos)));
+								}
+								case "void" -> {
+									return new Token(Kind.RES_void, startPos, i-startPos, arr, new SourceLocation(row, column - (i-startPos)));
+								}
+								case "boolean" -> {
+									return new Token(Kind.RES_boolean, startPos, i-startPos, arr, new SourceLocation(row, column - (i-startPos)));
+								}
+								case "write" -> {
+									return new Token(Kind.RES_write, startPos, i-startPos, arr, new SourceLocation(row, column - (i-startPos)));
+								}
+								case "height" -> {
+									return new Token(Kind.RES_height, startPos, i-startPos, arr, new SourceLocation(row, column - (i-startPos)));
+								}
+								case "width" -> {
+									return new Token(Kind.RES_width, startPos, i-startPos, arr, new SourceLocation(row, column - (i-startPos)));
+								}
+								case "if" -> {
+									return new Token(Kind.RES_if, startPos, i-startPos, arr, new SourceLocation(row, column - (i-startPos)));
+								}
+								case "fi" -> {
+									return new Token(Kind.RES_fi, startPos, i-startPos, arr, new SourceLocation(row, column - (i-startPos)));
+								}
+								case "do" -> {
+									return new Token(Kind.RES_do, startPos, i-startPos, arr, new SourceLocation(row, column - (i-startPos)));
+								}
+								case "od" -> {
+									return new Token(Kind.RES_od, startPos, i-startPos, arr, new SourceLocation(row, column - (i-startPos)));
+								}
+								case "red" -> {
+									return new Token(Kind.RES_red, startPos, i-startPos, arr, new SourceLocation(row, column - (i-startPos)));
+								}
+								case "green" -> {
+									return new Token(Kind.RES_green, startPos, i-startPos, arr, new SourceLocation(row, column - (i-startPos)));
+								}
+								case "blue" -> {
+									return new Token(Kind.RES_blue, startPos, i-startPos, arr, new SourceLocation(row, column - (i-startPos)));
+								}
+							}
 						}
 						else
 							return new Token(Kind.IDENT, startPos, i-startPos, arr, new SourceLocation(row, column - (i-startPos)));
