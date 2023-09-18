@@ -21,6 +21,7 @@ public class Lexer implements ILexer {
 	Set<String> constant_Set = new HashSet<String>(Set.of("Z", "BLACK", "BLUE", "CYAN", "DARK_GRAY", "GRAY", "GREEN", "LIGHT_GRAY", "MAGENTA", "ORANGE", "PINK", "RED", "WHITE", "YELLOW"));
 	Set<String> boolean_Set = new HashSet<String>(Set.of("TRUE", "FALSE"));
 	Set<String> reserved_Set = new HashSet<String>(Set.of("image", "pixel", "int", "string", "void", "boolean", "write", "height", "width", "if",  "fi", "do", "od", "red", "green", "blue"));
+	
 	public Lexer(String input) {
 		this.input = input;
 		sentinel = input.length();
@@ -29,6 +30,7 @@ public class Lexer implements ILexer {
 		column = 1;
 		arr = input.toCharArray();
 	}
+	
 	public boolean isAlphaNumericUnder(char c) {
 		if ((c >= '0' & c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_')
 		  return true;
