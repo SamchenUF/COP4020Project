@@ -31,13 +31,13 @@ public class Lexer implements ILexer {
 		column = 0;
 		arr = input.toCharArray();
 	}
-
+	
 	public boolean isAlphaNumericUnder(char c) {
 		if ((c >= '0' & c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_')
-			return true;
+		  return true;
 		return false;
-	}
-
+	  }
+	
 
 	@Override
 	public IToken next() throws LexicalException {
@@ -49,19 +49,19 @@ public class Lexer implements ILexer {
 			temp = false;
 		}
 		if (i >= sentinel) {
-			temp = false;
-		}
+				temp = false;
+			}
 		while(temp) {
 			if (i >= sentinel) {
 				temp = false;
 			}
 			if(temp) {
-				current = input.charAt(i);
-				column++;
+			current = input.charAt(i);
+			column++;
 			}
 			if(newTok) {startPos = i;}
 			//newRow = false;
-
+			
 			switch (state) {
 
 				case START -> {
@@ -69,9 +69,9 @@ public class Lexer implements ILexer {
 
 						case ' ', '\n', '\r' -> {
 							i++;
-
+							
 							if(current == '\n') {
-								row++;
+								row++; 
 								column = 0;
 								//newRow = true;
 							}
@@ -88,7 +88,7 @@ public class Lexer implements ILexer {
 						}
 						case '0' -> {
 							i++;
-							return new Token(Kind.NUM_LIT, startPos, 1, arr, new SourceLocation(row, column-1));
+							return new Token(Kind.NUM_LIT, startPos, 1, arr, new SourceLocation(row, column));
 						}
 						case '1', '2', '3', '4', '5', '6', '7', '8', '9' -> {
 							i++;
@@ -97,7 +97,7 @@ public class Lexer implements ILexer {
 						}
 						case '+' -> {
 							i++;
-							return new Token(Kind.PLUS, startPos, 1, arr, new SourceLocation(row, i));
+							return new Token(Kind.PLUS, startPos, 1, arr, new SourceLocation(row, column));
 						}
 						case ',' -> {
 							i++;
@@ -128,7 +128,7 @@ public class Lexer implements ILexer {
 							i++;
 							if(i >= sentinel) {return new Token(Kind.LSQUARE, startPos, 1, arr, new SourceLocation(row, column));}
 							else {newTok = false; state = State.HAVE_LB;}
-
+							
 						}
 						case ']' -> {
 							i++;
@@ -138,7 +138,7 @@ public class Lexer implements ILexer {
 							i++;
 							if(i >= sentinel) {return new Token(Kind.LT, startPos, 1, arr, new SourceLocation(row, column));}
 							else{newTok = false; state = State.HAVE_LT;}
-
+							
 						}
 						case '>' -> {
 							i++;
@@ -158,7 +158,7 @@ public class Lexer implements ILexer {
 						case '%' -> {
 							i++;
 							return new Token(Kind.MOD, startPos, 1, arr, new SourceLocation(row, column));
-						}
+							}
 						case '#' -> {
 							i++;
 							if (input.charAt(i) == '#' ){i++; state = State.HAVE_HASH;}
@@ -176,7 +176,7 @@ public class Lexer implements ILexer {
 						case '!' -> {
 							i++;
 							return new Token(Kind.BANG, startPos, 1, arr, new SourceLocation(row, column));
-						}
+							}
 						case '|'-> {
 							i++;
 							if(i >= sentinel) {return new Token(Kind.BITOR, startPos, 1, arr, new SourceLocation(row, column));}
@@ -331,7 +331,7 @@ public class Lexer implements ILexer {
 				case HAVE_LT -> {
 					newTok = true;
 					if(current == '=') {
-						i++;
+						i++;						
 						return new Token(Kind.LE, startPos, 2, arr, new SourceLocation(row, column-1));
 					}
 					else if(current == ':') {
@@ -344,7 +344,7 @@ public class Lexer implements ILexer {
 				}
 				case HAVE_HASH -> {
 					if (current == '\n') {
-						row++;
+						row++; 
 						column = 0;
 						state = State.START;
 					}
@@ -352,7 +352,7 @@ public class Lexer implements ILexer {
 						throw new LexicalException("Not printable");
 					}
 					i++;
-				}
+					}
 				case HAVE_EQ -> {
 					newTok = true;
 					switch(current) {
@@ -392,18 +392,32 @@ public class Lexer implements ILexer {
 						}
 					}
 				}
-				case HAVE_DIGIT -> {
+				case HAVE_DIGIT -> { 
 					if(current >= '0' && current <= '9' && i < sentinel) {
 						i++;
 					}
 					else {
+						column--;
 						BigInteger maxInt = BigInteger.valueOf(Integer.MAX_VALUE);
 						BigInteger stringValue = new BigInteger(String.copyValueOf(arr, startPos, i - startPos));
 						if(stringValue.compareTo(maxInt) > 0) {
 							throw new LexicalException("Num too big");
 						}
 						else {
-							return new Token(Kind.NUM_LIT, startPos, i-startPos, arr, new SourceLocation(row, column - (i-startPos)));
+						return new Token(Kind.NUM_LIT, startPos, i-startPos, arr, new SourceLocation(row, column - (i-startPos) + 1));
+						}
+					}
+				}
+				case HAVE_COLON -> {
+					newTok = true;
+					switch(current) {
+						case '>' -> {
+							i++;
+							return new Token(Kind.BLOCK_CLOSE, startPos, 2, arr, new SourceLocation(row, column-1));
+						}
+						default -> {
+							column--;
+							return new Token(Kind.COLON, startPos, 1, arr, new SourceLocation(row, column-1));
 						}
 					}
 				}
