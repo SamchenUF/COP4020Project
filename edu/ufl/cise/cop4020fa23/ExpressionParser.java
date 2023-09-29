@@ -43,6 +43,7 @@ import static edu.ufl.cise.cop4020fa23.Kind.RSQUARE;
 import static edu.ufl.cise.cop4020fa23.Kind.STRING_LIT;
 import static edu.ufl.cise.cop4020fa23.Kind.TIMES;
 import static edu.ufl.cise.cop4020fa23.Kind.CONST;
+import static edu.ufl.cise.cop4020fa23.Kind.BOOLEAN_LIT;
 
 import java.util.Arrays;
 
@@ -74,14 +75,15 @@ AdditiveExpr ::= MultiplicativeExpr ( ( + | -  ) MultiplicativeExpr )*
 MultiplicativeExpr ::= UnaryExpr (( * |  /  |  % ) UnaryExpr)*
 UnaryExpr ::=  ( ! | - | length | width) UnaryExpr  |  UnaryExprPostfix
 UnaryExprPostfix::= PrimaryExpr (PixelSelector | ε ) (ChannelSelector | ε )
-PrimaryExpr ::=STRING_LIT | NUM_LIT |  IDENT | ( Expr ) | Z 
-    ExpandedPixel  
+PrimaryExpr ::= STRING_LIT | NUM_LIT |  BOOLEAN_LIT | IDENT | ( Expr ) | CONST | ExpandedPixel  
 ChannelSelector ::= : red | : green | : blue
 PixelSelector  ::= [ Expr , Expr ]
 ExpandedPixel ::= [ Expr , Expr , Expr ]
 Dimension  ::=  [ Expr , Expr ]                         
 
  */
+
+
 
 public class ExpressionParser implements IParser {
 	
@@ -99,6 +101,18 @@ public class ExpressionParser implements IParser {
 		t = lexer.next();
 	}
 
+	protected boolean match(Kind kind) {
+		return t.kind() == kind;		
+	}
+
+	protected boolean match(Kind... kinds) {
+		for (Kind k : kinds) {
+			if (k == t.kind()) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	@Override
 	public AST parse() throws PLCCompilerException {
@@ -106,10 +120,29 @@ public class ExpressionParser implements IParser {
 		return e;
 	}
 
-
 	private Expr expr() throws PLCCompilerException {
 		IToken firstToken = t;
-		throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
+		return primaryExpr(firstToken);
+	}
+
+	private Expr primaryExpr(IToken firstToken) throws PLCCompilerException {
+		if (match(STRING_LIT)) {
+			t = lexer.next();
+			return new StringLitExpr(firstToken);
+		}
+		else if (match(NUM_LIT)) {
+			return new NumLitExpr(firstToken);
+		}
+		else if(match(BOOLEAN_LIT)) {
+			return new BooleanLitExpr(firstToken);
+		}
+		else if (match(IDENT)) {
+			return new IdentExpr(firstToken);
+		}
+		else if (match(CONST)) {
+			return new ConstExpr(firstToken);
+		}
+		throw new UnsupportedOperationException("The Parser isn't ready for this");
 	}
 
     
