@@ -101,13 +101,6 @@ public class ExpressionParser implements IParser {
 		t = lexer.next();
 	}
 
-
-	@Override
-	public AST parse() throws PLCCompilerException {
-		Expr e = expr();
-		return e;
-	}
-
 	protected boolean match(Kind kind) {
 		return t.kind() == kind;		
 	}
@@ -121,15 +114,20 @@ public class ExpressionParser implements IParser {
 		return false;
 	}
 
-	private Expr expr() throws PLCCompilerException {
-		IToken firstToken = t;
-
-		throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
+	@Override
+	public AST parse() throws PLCCompilerException {
+		Expr e = expr();
+		return e;
 	}
 
-	private Expr primaryExpr() throws PLCCompilerException {
+	private Expr expr() throws PLCCompilerException {
 		IToken firstToken = t;
+		return primaryExpr(firstToken);
+	}
+
+	private Expr primaryExpr(IToken firstToken) throws PLCCompilerException {
 		if (match(STRING_LIT)) {
+			t = lexer.next();
 			return new StringLitExpr(firstToken);
 		}
 		else if (match(NUM_LIT)) {
