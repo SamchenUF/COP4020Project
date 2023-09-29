@@ -287,7 +287,8 @@ public class ExpressionParser implements IParser {
 				Expr e2 = expr();
 				if (match(RSQUARE)) {
 					t = lexer.next();
-					return new PixelSelector(firstToken, e0, e1, e2);
+					return new Expr(firstToken, e0, e1);
+
 				}
 				throw new SyntaxException("Expected closing square bracket for PixelSelector");
 			}
