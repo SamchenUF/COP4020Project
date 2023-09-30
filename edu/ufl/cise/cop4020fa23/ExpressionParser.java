@@ -123,8 +123,12 @@ public class ExpressionParser implements IParser {
 
 	private Expr expr() throws PLCCompilerException {
 		IToken firstToken = t;
-		postFix(firstToken);
-		return primaryExpr(firstToken);
+		if(match(QUESTION)) {
+			return conditionalExpr();
+		}
+		else {
+			return logicalOrExpr();
+		}
 	}
 
 	private void postFix(IToken firstToken) throws PLCCompilerException {
@@ -142,6 +146,9 @@ public class ExpressionParser implements IParser {
 
 	private void pixelSelect(IToken firsToken) throws PLCCompilerException {
 		if(match(LSQUARE)) {
+			t = lexer.next();
+			expr();
+			match(COMMA);
 			t = lexer.next();
 			expr();
 			match(RSQUARE);
