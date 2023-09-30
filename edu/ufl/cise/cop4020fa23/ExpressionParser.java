@@ -45,6 +45,7 @@ import static edu.ufl.cise.cop4020fa23.Kind.TIMES;
 import static edu.ufl.cise.cop4020fa23.Kind.CONST;
 import static edu.ufl.cise.cop4020fa23.Kind.BOOLEAN_LIT;
 
+import java.text.CollationElementIterator;
 import java.util.Arrays;
 
 import edu.ufl.cise.cop4020fa23.ast.AST;
@@ -308,6 +309,9 @@ public class ExpressionParser implements IParser {
 		if (match(COLON)) {
 			e2 = channelSelector();
 		}
+		if(e1 != null || e2 != null) {
+			e0 = new PostfixExpr(first, e0, e1, e2);
+		}
 		return e0;
 	}
 
@@ -316,13 +320,13 @@ public class ExpressionParser implements IParser {
 		if (match(COLON)) {
 			t = lexer.next(); // consume the COLON
 			if (match(RES_red)) {
-				t = lexer.next(); // consume the red
+				//t = lexer.next(); // consume the red
 				return new ChannelSelector(firstToken, t);
 			} else if (match(RES_green)) {
-				t = lexer.next(); // consume the green
+				//t = lexer.next(); // consume the green
 				return new ChannelSelector(firstToken, t);
 			} else if (match(RES_blue)) {
-				t = lexer.next(); // consume the blue
+				//t = lexer.next(); // consume the blue
 				return new ChannelSelector(firstToken, t);
 			} else {
 				throw new SyntaxException(t.sourceLocation(), ": followed by an invalid color");
