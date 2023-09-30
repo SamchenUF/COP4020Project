@@ -283,27 +283,30 @@ public class ExpressionParser implements IParser {
 
 	private Expr unaryExpr() throws PLCCompilerException {
 		// This is an initial skeleton; it needs additional cases for "length" and "width"
+		IToken firsToken = t;
 		if (match(BANG, MINUS)) {
 			IToken op = t;
 			t = lexer.next();
 			Expr e = unaryExpr();
 			return new UnaryExpr(e.firstToken, op, e);
 		} else {
-			return unaryExprPostfix();
+			return unaryExprPostfix(firsToken);
 		}
 	}
 
-	private Expr unaryExprPostfix() throws PLCCompilerException {
+	private Expr unaryExprPostfix(IToken first) throws PLCCompilerException {
 		Expr e0 = primaryExpr(t);
+		PixelSelector e1 = null;
+		ChannelSelector e2 = null;
 		// Check for PixelSelector or epsilon
 		if (match(LSQUARE)) {
-			e0 = pixelSelector(e0);
+			e1 = pixelSelector(e0);
 		}
 		// Check for ChannelSelector or epsilon
 		if (match(COLON)) {
-			e0 = channelSelector();
+			e2 = channelSelector();
 		}
-		return e0;
+		return new PostfixExpr(first, e0, e1, e2);
 	}
 
 	private ChannelSelector channelSelector() throws PLCCompilerException {
