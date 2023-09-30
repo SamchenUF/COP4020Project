@@ -120,9 +120,35 @@ public class ExpressionParser implements IParser {
 		return e;
 	}
 
+
 	private Expr expr() throws PLCCompilerException {
 		IToken firstToken = t;
+		postFix(firstToken);
 		return primaryExpr(firstToken);
+	}
+
+	private void postFix(IToken firstToken) throws PLCCompilerException {
+		primaryExpr(firstToken);
+		t = lexer.next();
+		if(!match(EOF)) {
+			pixelSelect(t);
+			t = lexer.next();
+		}
+		if (!match(EOF)) {
+			channelSelector(t);
+			t = lexer.next();
+		}
+	}
+
+	private void pixelSelect(IToken firsToken) throws PLCCompilerException {
+		if(match(LSQUARE)) {
+			t = lexer.next();
+			expr();
+			match(RSQUARE);
+			t = lexer.next();
+		}
+		else
+			throw new SyntaxException("Not valid syntax");
 	}
 
 	private Expr primaryExpr(IToken firstToken) throws PLCCompilerException {
@@ -131,18 +157,35 @@ public class ExpressionParser implements IParser {
 			return new StringLitExpr(firstToken);
 		}
 		else if (match(NUM_LIT)) {
+			t = lexer.next();
 			return new NumLitExpr(firstToken);
 		}
 		else if(match(BOOLEAN_LIT)) {
+			t = lexer.next();
 			return new BooleanLitExpr(firstToken);
 		}
 		else if (match(IDENT)) {
+			t  = lexer.next();
 			return new IdentExpr(firstToken);
 		}
+		else if (match(LPAREN)) {
+			t = lexer.next();
+			expr();
+			match(RPAREN);
+		}
 		else if (match(CONST)) {
+			t = lexer.next();
 			return new ConstExpr(firstToken);
 		}
-		throw new UnsupportedOperationException("The Parser isn't ready for this");
+		throw new SyntaxException("Not valid syntax");
+	}
+
+	private ChannelSelector channelSelector(IToken firstToken) throws PLCCompilerException { //Use this for postFix Expr
+		t = lexer.next();
+		if(match(RES_blue, RES_green, RES_red)) {
+			return new ChannelSelector(firstToken, t);
+		}
+		throw new SyntaxException("Not valid syntax");
 	}
 
     
