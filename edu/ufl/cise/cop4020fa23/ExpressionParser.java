@@ -178,8 +178,11 @@ public class ExpressionParser implements IParser {
 		}
 		else if (match(LPAREN)) {
 			t = lexer.next();
-			expr();
-			match(RPAREN);
+			Expr e0 = expr();
+			if (match(RPAREN)) {
+				return e0;
+			}
+
 		}
 		else if (match(CONST)) {
 			t = lexer.next();
@@ -304,6 +307,7 @@ public class ExpressionParser implements IParser {
 		// Check for PixelSelector or epsilon
 		if (match(LSQUARE)) {
 			e1 = pixelSelector(e0);
+			t = lexer.next();
 		}
 		// Check for ChannelSelector or epsilon
 		if (match(COLON)) {
@@ -345,7 +349,7 @@ public class ExpressionParser implements IParser {
 				t = lexer.next();
 				Expr e2 = expr();
 				if (match(RSQUARE)) {
-					t = lexer.next();
+					//t = lexer.next();
 					return new PixelSelector(firstToken, e1, e2);
 
 				}
@@ -368,7 +372,6 @@ public class ExpressionParser implements IParser {
 					t = lexer.next();
 					Expr blue = expr();
 					if (match(RSQUARE)) {
-						t = lexer.next();
 						return new ExpandedPixelExpr(firstToken, red, green, blue);
 					}
 					throw new SyntaxException("Expected closing square bracket for ExpandedPixel");
