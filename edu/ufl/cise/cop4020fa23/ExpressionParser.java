@@ -282,9 +282,8 @@ public class ExpressionParser implements IParser {
 	}
 
 	private Expr unaryExpr() throws PLCCompilerException {
-		// This is an initial skeleton; it needs additional cases for "length" and "width"
 		IToken firsToken = t;
-		if (match(BANG, MINUS)) {
+		if (match(BANG, MINUS, RES_width, RES_height)) {
 			IToken op = t;
 			t = lexer.next();
 			Expr e = unaryExpr();
