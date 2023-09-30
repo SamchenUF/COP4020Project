@@ -132,7 +132,7 @@ public class ExpressionParser implements IParser {
 		}
 	}
 
-	private void postFix(IToken firstToken) throws PLCCompilerException {
+	/*private void postFix(IToken firstToken) throws PLCCompilerException {
 		primaryExpr(firstToken);
 		t = lexer.next();
 		if(!match(EOF)) {
@@ -143,7 +143,7 @@ public class ExpressionParser implements IParser {
 			channelSelector(t);
 			t = lexer.next();
 		}
-	}
+	}*/
 
 	private void pixelSelect(IToken firsToken) throws PLCCompilerException {
 		if(match(LSQUARE)) {
@@ -190,14 +190,6 @@ public class ExpressionParser implements IParser {
 		}
 		else if (match(LSQUARE)) {
 			return expandedPixel();
-		}
-		throw new SyntaxException("Not valid syntax");
-	}
-
-	private ChannelSelector channelSelector(IToken firstToken) throws PLCCompilerException { //Use this for postFix Expr
-		t = lexer.next();
-		if(match(RES_blue, RES_green, RES_red)) {
-			return new ChannelSelector(firstToken, t);
 		}
 		throw new SyntaxException("Not valid syntax");
 	}
@@ -322,17 +314,11 @@ public class ExpressionParser implements IParser {
 	private ChannelSelector channelSelector() throws PLCCompilerException {
 		IToken firstToken = t;
 		if (match(COLON)) {
-			t = lexer.next(); // consume the COLON
-			if (match(RES_red)) {
-				//t = lexer.next(); // consume the red
+			t = lexer.next();
+			if(match(RES_blue, RES_green, RES_red)) {
 				return new ChannelSelector(firstToken, t);
-			} else if (match(RES_green)) {
-				//t = lexer.next(); // consume the green
-				return new ChannelSelector(firstToken, t);
-			} else if (match(RES_blue)) {
-				//t = lexer.next(); // consume the blue
-				return new ChannelSelector(firstToken, t);
-			} else {
+			}
+			else {
 				throw new SyntaxException(t.sourceLocation(), ": followed by an invalid color");
 			}
 		}
