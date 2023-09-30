@@ -184,6 +184,9 @@ public class ExpressionParser implements IParser {
 			t = lexer.next();
 			return new ConstExpr(firstToken);
 		}
+		else if (match(LSQUARE)) {
+			return expandedPixel();
+		}
 		throw new SyntaxException("Not valid syntax");
 	}
 
@@ -305,7 +308,7 @@ public class ExpressionParser implements IParser {
 		if (match(COLON)) {
 			e2 = channelSelector();
 		}
-		return new PostfixExpr(first, e0, e1, e2);
+		return e0;
 	}
 
 	private ChannelSelector channelSelector() throws PLCCompilerException {
