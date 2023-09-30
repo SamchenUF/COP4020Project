@@ -125,7 +125,7 @@ public class ExpressionParser implements IParser {
 	private Expr expr() throws PLCCompilerException {
 		IToken firstToken = t;
 		if(match(QUESTION)) {
-			return conditionalExpr();
+			return conditionalExpr(firstToken);
 		}
 		else {
 			return logicalOrExpr();
@@ -144,20 +144,6 @@ public class ExpressionParser implements IParser {
 			t = lexer.next();
 		}
 	}*/
-
-	private void pixelSelect(IToken firsToken) throws PLCCompilerException {
-		if(match(LSQUARE)) {
-			t = lexer.next();
-			expr();
-			match(COMMA);
-			t = lexer.next();
-			expr();
-			match(RSQUARE);
-			t = lexer.next();
-		}
-		else
-			throw new SyntaxException("Not valid syntax");
-	}
 
 	private Expr primaryExpr(IToken firstToken) throws PLCCompilerException {
 		if (match(STRING_LIT)) {
@@ -194,15 +180,15 @@ public class ExpressionParser implements IParser {
 		throw new SyntaxException("Not valid syntax");
 	}
 
-	private Expr conditionalExpr() throws PLCCompilerException {
-		IToken firstToken = t;
+	private Expr conditionalExpr(IToken firstToken) throws PLCCompilerException {
+		//IToken firstToken = t;
 		if (match(QUESTION)) {
 			t = lexer.next();
 			Expr expr1 = expr();
-			if (match(COLON)) {
+			if (match(RARROW)) {
 				t = lexer.next();
 				Expr expr2 = expr();
-				if (match(COLON)) {
+				if (match(COMMA)) {
 					t = lexer.next();
 					Expr expr3 = expr();
 					return new ConditionalExpr(firstToken, expr1, expr2, expr3);
@@ -335,9 +321,7 @@ public class ExpressionParser implements IParser {
 				t = lexer.next();
 				Expr e2 = expr();
 				if (match(RSQUARE)) {
-					//t = lexer.next();
 					return new PixelSelector(firstToken, e1, e2);
-
 				}
 				throw new SyntaxException("Expected closing square bracket for PixelSelector");
 			}
