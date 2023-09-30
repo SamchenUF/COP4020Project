@@ -188,6 +188,180 @@ public class ExpressionParser implements IParser {
 		throw new SyntaxException("Not valid syntax");
 	}
 
-    
+	private Expr conditionalExpr() throws PLCCompilerException {
+		IToken firstToken = t;
+		if (match(QUESTION)) {
+			t = lexer.next();
+			Expr expr1 = expr();
+			if (match(COLON)) {
+				t = lexer.next();
+				Expr expr2 = expr();
+				if (match(COLON)) {
+					t = lexer.next();
+					Expr expr3 = expr();
+					return new ConditionalExpr(firstToken, expr1, expr2, expr3);
+				}
+				throw new SyntaxException("Expected second colon in conditional expression");
+			}
+			throw new SyntaxException("Expected colon in conditional expression");
+		}
+		throw new SyntaxException("Incorrect start for ConditionalExpr");
+	}
+
+	private Expr logicalOrExpr() throws PLCCompilerException {
+		Expr e0 = logicalAndExpr();
+		while (match(BITOR, OR)) {
+			IToken op = t;
+			t = lexer.next();
+			Expr e1 = logicalAndExpr();
+			e0 = new BinaryExpr(e0.firstToken, e0, op, e1);
+		}
+		return e0;
+	}
+
+	private Expr logicalAndExpr() throws PLCCompilerException {
+		Expr e0 = comparisonExpr();
+		while (match(BITAND, AND)) {
+			IToken op = t;
+			t = lexer.next();
+			Expr e1 = comparisonExpr();
+			e0 = new BinaryExpr(e0.firstToken, e0, op, e1);
+		}
+		return e0;
+	}
+
+	private Expr comparisonExpr() throws PLCCompilerException {
+		Expr e0 = powExpr();
+		while (match(LT, GT, EQ, LE, GE)) {
+			IToken op = t;
+			t = lexer.next();
+			Expr e1 = powExpr();
+			e0 = new BinaryExpr(e0.firstToken, e0, op, e1);
+		}
+		return e0;
+	}
+
+	private Expr powExpr() throws PLCCompilerException {
+		Expr e0 = additiveExpr();
+		if (match(EXP)) {
+			IToken op = t;
+			t = lexer.next();
+			Expr e1 = powExpr();
+			e0 = new BinaryExpr(e0.firstToken, e0, op, e1);
+		}
+		return e0;
+	}
+
+	private Expr additiveExpr() throws PLCCompilerException {
+		Expr e0 = multiplicativeExpr();
+		while (match(PLUS, MINUS)) {
+			IToken op = t;
+			t = lexer.next();
+			Expr e1 = multiplicativeExpr();
+			e0 = new BinaryExpr(e0.firstToken(), e0, op, e1);
+		}
+		return e0;
+	}
+
+	private Expr multiplicativeExpr() throws PLCCompilerException {
+		Expr e0 = unaryExpr();
+		while (match(TIMES, DIV, MOD)) {
+			IToken op = t;
+			t = lexer.next();
+			Expr e1 = unaryExpr();
+			e0 = new BinaryExpr(e0.firstToken, e0, op, e1);
+		}
+		return e0;
+	}
+
+	private Expr unaryExpr() throws PLCCompilerException {
+		// This is an initial skeleton; it needs additional cases for "length" and "width"
+		if (match(BANG, MINUS)) {
+			IToken op = t;
+			t = lexer.next();
+			Expr e = unaryExpr();
+			return new UnaryExpr(e.firstToken, op, e);
+		} else {
+			return unaryExprPostfix();
+		}
+	}
+
+	private Expr unaryExprPostfix() throws PLCCompilerException {
+		Expr e0 = primaryExpr(t);
+		// Check for PixelSelector or epsilon
+		if (match(LSQUARE)) {
+			e0 = pixelSelector(e0);
+		}
+		// Check for ChannelSelector or epsilon
+		if (match(COLON)) {
+			e0 = channelSelector(e0);
+		}
+		return e0;
+	}
+
+	private ChannelSelector channelSelector() throws PLCCompilerException {
+		IToken firstToken = t;
+		if (match(COLON)) {
+			t = lexer.next(); // consume the COLON
+			if (match(RES_red)) {
+				t = lexer.next(); // consume the red
+				return new ChannelSelector(firstToken, t);
+			} else if (match(RES_green)) {
+				t = lexer.next(); // consume the green
+				return new ChannelSelector(firstToken, t);
+			} else if (match(RES_blue)) {
+				t = lexer.next(); // consume the blue
+				return new ChannelSelector(firstToken, t);
+			} else {
+				throw new SyntaxException(t.sourceLocation(), ": followed by an invalid color");
+			}
+		}
+		throw new SyntaxException(t.sourceLocation(), "Expected a color selector but found " + t.kind());
+	}
+
+
+	private Expr pixelSelector(Expr e0) throws PLCCompilerException {
+		IToken firstToken = t;
+		if (match(LSQUARE)) {
+			t = lexer.next();
+			Expr e1 = expr();
+			if (match(COMMA)) {
+				t = lexer.next();
+				Expr e2 = expr();
+				if (match(RSQUARE)) {
+					t = lexer.next();
+					return new Expr(firstToken, e0, e1);
+
+				}
+				throw new SyntaxException("Expected closing square bracket for PixelSelector");
+			}
+			throw new SyntaxException("Expected comma in PixelSelector");
+		}
+		throw new SyntaxException("Incorrect start for PixelSelector");
+	}
+
+	private Expr expandedPixel() throws PLCCompilerException {
+		IToken firstToken = t;
+		if (match(LSQUARE)) {
+			t = lexer.next();
+			Expr red = expr();
+			if (match(COMMA)) {
+				t = lexer.next();
+				Expr green = expr();
+				if (match(COMMA)) {
+					t = lexer.next();
+					Expr blue = expr();
+					if (match(RSQUARE)) {
+						t = lexer.next();
+						return new ExpandedPixelExpr(firstToken, red, green, blue);
+					}
+					throw new SyntaxException("Expected closing square bracket for ExpandedPixel");
+				}
+				throw new SyntaxException("Expected second comma in ExpandedPixel");
+			}
+			throw new SyntaxException("Expected first comma in ExpandedPixel");
+		}
+		throw new SyntaxException("Incorrect start for ExpandedPixel");
+	}
 
 }
