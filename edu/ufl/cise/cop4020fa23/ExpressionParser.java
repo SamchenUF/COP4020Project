@@ -301,7 +301,7 @@ public class ExpressionParser implements IParser {
 		}
 		// Check for ChannelSelector or epsilon
 		if (match(COLON)) {
-			e0 = channelSelector(e0);
+			e0 = channelSelector();
 		}
 		return e0;
 	}
@@ -327,7 +327,7 @@ public class ExpressionParser implements IParser {
 	}
 
 
-	private Expr pixelSelector(Expr e0) throws PLCCompilerException {
+	private PixelSelector pixelSelector(Expr e0) throws PLCCompilerException {
 		IToken firstToken = t;
 		if (match(LSQUARE)) {
 			t = lexer.next();
@@ -337,7 +337,7 @@ public class ExpressionParser implements IParser {
 				Expr e2 = expr();
 				if (match(RSQUARE)) {
 					t = lexer.next();
-					return new Expr(firstToken, e0, e1);
+					return new PixelSelector(firstToken, e1, e2);
 
 				}
 				throw new SyntaxException("Expected closing square bracket for PixelSelector");
