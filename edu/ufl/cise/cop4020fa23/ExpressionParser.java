@@ -163,12 +163,13 @@ public class ExpressionParser implements IParser {
 			return new IdentExpr(firstToken);
 		}
 		else if (match(LPAREN)) {
+			Expr e0 = null;
 			t = lexer.next();
-			Expr e0 = expr();
+			e0 = expr();
 			if (match(RPAREN)) {
+				t = lexer.next();
 				return e0;
 			}
-
 		}
 		else if (match(CONST)) {
 			t = lexer.next();
