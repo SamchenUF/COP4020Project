@@ -125,16 +125,19 @@ public class ExpressionParser implements IParser {
 
 	private Expr expr() throws PLCCompilerException {
 		IToken firstToken = t;
+
+		// Check if expression starts with a question mark, which indicates a conditional expression
 		if(match(QUESTION)) {
 			return conditionalExpr(firstToken);
 		}
+		// If it's not a conditional expression, parse as a logical OR expression
 		else {
 			return logicalOrExpr();
 		}
 	}
 
 
-	// Parses primary expressions like literals, identifiers, parenthesized expressions, and constants
+	// Method that parses primary expressions like literals, identifiers, parenthesized expressions, and constants
 	private Expr primaryExpr(IToken firstToken) throws PLCCompilerException {
 		if (match(STRING_LIT)) {
 			t = lexer.next();
@@ -152,6 +155,7 @@ public class ExpressionParser implements IParser {
 			t  = lexer.next();
 			return new IdentExpr(firstToken);
 		}
+		// For parenthesized expressions, parse the enclosed expression
 		else if (match(LPAREN)) {
 			Expr e0 = null;
 			t = lexer.next();
@@ -165,9 +169,11 @@ public class ExpressionParser implements IParser {
 			t = lexer.next();
 			return new ConstExpr(firstToken);
 		}
+		// Parse an expanded pixel definition
 		else if (match(LSQUARE)) {
 			return expandedPixel();
 		}
+		// If there's no recognized form that is found, throw an exception
 		throw new SyntaxException("Not valid syntax");
 	}
 
