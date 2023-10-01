@@ -1,11 +1,11 @@
 /*Copyright 2023 by Beverly A Sanders
- * 
- * This code is provided for solely for use of students in COP4020 Programming Language Concepts at the 
- * University of Florida during the fall semester 2023 as part of the course project.  
- * 
- * No other use is authorized. 
- * 
- * This code may not be posted on a public web site either during or after the course.  
+ *
+ * This code is provided for solely for use of students in COP4020 Programming Language Concepts at the
+ * University of Florida during the fall semester 2023 as part of the course project.
+ *
+ * No other use is authorized.
+ *
+ * This code may not be posted on a public web site either during or after the course.
  */
 package edu.ufl.cise.cop4020fa23;
 
@@ -66,35 +66,34 @@ import edu.ufl.cise.cop4020fa23.exceptions.LexicalException;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 import edu.ufl.cise.cop4020fa23.exceptions.SyntaxException;
 /**
-Expr::=  ConditionalExpr | LogicalOrExpr    
-ConditionalExpr ::=  ?  Expr  :  Expr  :  Expr 
-LogicalOrExpr ::= LogicalAndExpr (    (   |   |   ||   ) LogicalAndExpr)*
-LogicalAndExpr ::=  ComparisonExpr ( (   &   |  &&   )  ComparisonExpr)*
-ComparisonExpr ::= PowExpr ( (< | > | == | <= | >=) PowExpr)*
-PowExpr ::= AdditiveExpr ** PowExpr |   AdditiveExpr
-AdditiveExpr ::= MultiplicativeExpr ( ( + | -  ) MultiplicativeExpr )*
-MultiplicativeExpr ::= UnaryExpr (( * |  /  |  % ) UnaryExpr)*
-UnaryExpr ::=  ( ! | - | length | width) UnaryExpr  |  UnaryExprPostfix
-UnaryExprPostfix::= PrimaryExpr (PixelSelector | ε ) (ChannelSelector | ε )
-PrimaryExpr ::= STRING_LIT | NUM_LIT |  BOOLEAN_LIT | IDENT | ( Expr ) | CONST | ExpandedPixel  
-ChannelSelector ::= : red | : green | : blue
-PixelSelector  ::= [ Expr , Expr ]
-ExpandedPixel ::= [ Expr , Expr , Expr ]
-Dimension  ::=  [ Expr , Expr ]                         
+ Expr::=  ConditionalExpr | LogicalOrExpr
+ ConditionalExpr ::=  ?  Expr  :  Expr  :  Expr
+ LogicalOrExpr ::= LogicalAndExpr (    (   |   |   ||   ) LogicalAndExpr)*
+ LogicalAndExpr ::=  ComparisonExpr ( (   &   |  &&   )  ComparisonExpr)*
+ ComparisonExpr ::= PowExpr ( (< | > | == | <= | >=) PowExpr)*
+ PowExpr ::= AdditiveExpr ** PowExpr |   AdditiveExpr
+ AdditiveExpr ::= MultiplicativeExpr ( ( + | -  ) MultiplicativeExpr )*
+ MultiplicativeExpr ::= UnaryExpr (( * |  /  |  % ) UnaryExpr)*
+ UnaryExpr ::=  ( ! | - | length | width) UnaryExpr  |  UnaryExprPostfix
+ UnaryExprPostfix::= PrimaryExpr (PixelSelector | ε ) (ChannelSelector | ε )
+ PrimaryExpr ::= STRING_LIT | NUM_LIT |  BOOLEAN_LIT | IDENT | ( Expr ) | CONST | ExpandedPixel
+ ChannelSelector ::= : red | : green | : blue
+ PixelSelector  ::= [ Expr , Expr ]
+ ExpandedPixel ::= [ Expr , Expr , Expr ]
+ Dimension  ::=  [ Expr , Expr ]
 
  */
 
 
-
 public class ExpressionParser implements IParser {
-	
+
 	final ILexer lexer;
 	private IToken t;
-	
+
 
 	/**
 	 * @param lexer
-	 * @throws LexicalException 
+	 * @throws LexicalException
 	 */
 	public ExpressionParser(ILexer lexer) throws LexicalException {
 		super();
@@ -102,10 +101,12 @@ public class ExpressionParser implements IParser {
 		t = lexer.next();
 	}
 
+	// Check if current token's kind matches the given kind
 	protected boolean match(Kind kind) {
-		return t.kind() == kind;		
+		return t.kind() == kind;
 	}
 
+	// Check if current token's kind matches any of the given kinds
 	protected boolean match(Kind... kinds) {
 		for (Kind k : kinds) {
 			if (k == t.kind()) {
@@ -122,6 +123,7 @@ public class ExpressionParser implements IParser {
 	}
 
 
+	// Parses an expression based on defined grammar
 	private Expr expr() throws PLCCompilerException {
 		IToken firstToken = t;
 		if(match(QUESTION)) {
@@ -355,3 +357,4 @@ public class ExpressionParser implements IParser {
 	}
 
 }
+
