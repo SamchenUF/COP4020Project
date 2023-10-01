@@ -133,18 +133,6 @@ public class ExpressionParser implements IParser {
 		}
 	}
 
-	/*private void postFix(IToken firstToken) throws PLCCompilerException {
-		primaryExpr(firstToken);
-		t = lexer.next();
-		if(!match(EOF)) {
-			pixelSelect(t);
-			t = lexer.next();
-		}
-		if (!match(EOF)) {
-			channelSelector(t);
-			t = lexer.next();
-		}
-	}*/
 
 	// Parses primary expressions like literals, identifiers, parenthesized expressions, and constants
 	private Expr primaryExpr(IToken firstToken) throws PLCCompilerException {
