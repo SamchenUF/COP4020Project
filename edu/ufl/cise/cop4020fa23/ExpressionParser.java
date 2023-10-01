@@ -123,7 +123,6 @@ public class ExpressionParser implements IParser {
 	}
 
 
-	// Parses an expression based on defined grammar
 	private Expr expr() throws PLCCompilerException {
 		IToken firstToken = t;
 		if(match(QUESTION)) {
@@ -147,6 +146,7 @@ public class ExpressionParser implements IParser {
 		}
 	}*/
 
+	// Parses primary expressions like literals, identifiers, parenthesized expressions, and constants
 	private Expr primaryExpr(IToken firstToken) throws PLCCompilerException {
 		if (match(STRING_LIT)) {
 			t = lexer.next();
@@ -183,6 +183,7 @@ public class ExpressionParser implements IParser {
 		throw new SyntaxException("Not valid syntax");
 	}
 
+	// Method that parses conditional expressions
 	private Expr conditionalExpr(IToken firstToken) throws PLCCompilerException {
 		//IToken firstToken = t;
 		if (match(QUESTION)) {
@@ -203,6 +204,7 @@ public class ExpressionParser implements IParser {
 		throw new SyntaxException("Incorrect start for ConditionalExpr");
 	}
 
+	// Method that parses logical OR expressions
 	private Expr logicalOrExpr() throws PLCCompilerException {
 		Expr e0 = logicalAndExpr();
 		while (match(BITOR, OR)) {
@@ -214,6 +216,7 @@ public class ExpressionParser implements IParser {
 		return e0;
 	}
 
+	// Method that parses logical AND expressions
 	private Expr logicalAndExpr() throws PLCCompilerException {
 		Expr e0 = comparisonExpr();
 		while (match(BITAND, AND)) {
@@ -225,6 +228,7 @@ public class ExpressionParser implements IParser {
 		return e0;
 	}
 
+	// Method that parses comparison expressions
 	private Expr comparisonExpr() throws PLCCompilerException {
 		Expr e0 = powExpr();
 		while (match(LT, GT, EQ, LE, GE)) {
@@ -236,6 +240,7 @@ public class ExpressionParser implements IParser {
 		return e0;
 	}
 
+	// Method that parses power expressions
 	private Expr powExpr() throws PLCCompilerException {
 		Expr e0 = additiveExpr();
 		if (match(EXP)) {
@@ -247,6 +252,7 @@ public class ExpressionParser implements IParser {
 		return e0;
 	}
 
+	// Method that parses additive expressions
 	private Expr additiveExpr() throws PLCCompilerException {
 		Expr e0 = multiplicativeExpr();
 		while (match(PLUS, MINUS)) {
@@ -258,6 +264,7 @@ public class ExpressionParser implements IParser {
 		return e0;
 	}
 
+	// Method that parses multiplicative expressions
 	private Expr multiplicativeExpr() throws PLCCompilerException {
 		Expr e0 = unaryExpr();
 		while (match(TIMES, DIV, MOD)) {
@@ -269,6 +276,7 @@ public class ExpressionParser implements IParser {
 		return e0;
 	}
 
+	// Method that parsed unary expressions
 	private Expr unaryExpr() throws PLCCompilerException {
 		IToken firsToken = t;
 		if (match(BANG, MINUS, RES_width, RES_height)) {
@@ -281,6 +289,7 @@ public class ExpressionParser implements IParser {
 		}
 	}
 
+	// Method that parses postfix unary expressions
 	private Expr unaryExprPostfix(IToken first) throws PLCCompilerException {
 		Expr e0 = primaryExpr(t);
 		PixelSelector e1 = null;
@@ -300,6 +309,7 @@ public class ExpressionParser implements IParser {
 		return e0;
 	}
 
+	// Method that parses channel selectors like :blue, :green, and :red
 	private ChannelSelector channelSelector() throws PLCCompilerException {
 		IToken firstToken = t;
 		if (match(COLON)) {
@@ -315,6 +325,7 @@ public class ExpressionParser implements IParser {
 	}
 
 
+	// Method that parses pixel selectors
 	private PixelSelector pixelSelector(Expr e0) throws PLCCompilerException {
 		IToken firstToken = t;
 		if (match(LSQUARE)) {
@@ -333,6 +344,7 @@ public class ExpressionParser implements IParser {
 		throw new SyntaxException("Incorrect start for PixelSelector");
 	}
 
+	// Method that parses expanded pixel expressions
 	private Expr expandedPixel() throws PLCCompilerException {
 		IToken firstToken = t;
 		if (match(LSQUARE)) {
