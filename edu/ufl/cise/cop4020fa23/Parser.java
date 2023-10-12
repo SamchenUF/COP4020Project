@@ -96,13 +96,16 @@ public class Parser implements IParser {
 		}
 		t = lexer.next();  // Consume the '<:' token
 
-		while (match(Kind.RES_write, Kind.RES_do, Kind.RES_if, Kind.RETURN, Kind.IDENT, Kind.LT, Kind.RES_image, Kind.RES_pixel, Kind.RES_string, Kind.RES_boolean, Kind.RES_int, Kind.RES_void)) {
+		while (match(RES_write, RES_do, RES_if, RETURN, IDENT, LT, RES_image, RES_pixel, RES_string, RES_boolean, RES_int, RES_void)) {
 			BlockElem e0;
-			if (match(Kind.RES_image, Kind.RES_pixel, Kind.RES_string, Kind.RES_boolean, Kind.RES_int, Kind.RES_void)) {
+			if (match(RES_image, RES_pixel, RES_string, RES_boolean, RES_int, RES_void)) {
 				e0 = declaration();
+				//t = lexer.next();
 			} else {
 				e0 = statement();
+				//t = lexer.next();
 			}
+			t = lexer.next();
 			l1.add(e0);
 		}
 		//t = lexer.next(); //comsume the last statement or declaration
@@ -120,7 +123,7 @@ public class Parser implements IParser {
 		NameDef nDef = nameDef();
 
 		Expr initializer = null;
-
+		t = lexer.next();
 		// Check if there's an initializer
 		if(match(Kind.EQ)) {
 			t = lexer.next();
@@ -159,7 +162,10 @@ public class Parser implements IParser {
 		if (match(Kind.RES_write)) {
 			t = lexer.next();  // Consume the "write" token
 			Expr expr = expr();
-			return new WriteStatement(firstToken, expr);
+			t = lexer.next();
+			if(match(SEMI)) {
+				return new WriteStatement(firstToken, expr);
+			}
 		}
 		// If the statement is an assignment: LValue = Expr
 		else if (match(Kind.IDENT)) {  // Assuming LValue starts with an IDENT
@@ -167,8 +173,12 @@ public class Parser implements IParser {
 			if (match(Kind.ASSIGN)) {
 				t = lexer.next();  // Consume the "=" token
 				Expr expr = expr();
-				return new AssignmentStatement(firstToken, lvalue, expr);
-			} else {
+				t = lexer.next();
+				if(match(SEMI)) {
+					return new AssignmentStatement(firstToken, lvalue, expr);
+				}
+			} 
+			else {
 				throw new SyntaxException("Expected '=' after LValue");
 			}
 		}
@@ -215,9 +225,7 @@ public class Parser implements IParser {
 			Block block = block();
 			return new StatementBlock(firstToken, block);
 		}
-		else {
-			throw new SyntaxException("Invalid statement starting at " + firstToken);
-		}
+		throw new PLCCompilerException("Not valid statement");
 	}
 
 
