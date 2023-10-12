@@ -46,7 +46,9 @@ import static edu.ufl.cise.cop4020fa23.Kind.CONST;
 import static edu.ufl.cise.cop4020fa23.Kind.BOOLEAN_LIT;
 
 import java.text.CollationElementIterator;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import edu.ufl.cise.cop4020fa23.ast.AST;
 import edu.ufl.cise.cop4020fa23.ast.BinaryExpr;
