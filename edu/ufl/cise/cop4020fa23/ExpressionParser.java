@@ -298,7 +298,7 @@ public class ExpressionParser implements IParser {
 			e2 = channelSelector();
 		}
 		if(e1 != null || e2 != null) {
-			e0 = new PostfixExpr(first, e0, e1, e2);
+		e0 = new PostfixExpr(first, e0, e1, e2);
 		}
 		return e0;
 	}
@@ -351,6 +351,7 @@ public class ExpressionParser implements IParser {
 					t = lexer.next();
 					Expr blue = expr();
 					if (match(RSQUARE)) {
+						t = lexer.next();
 						return new ExpandedPixelExpr(firstToken, red, green, blue);
 					}
 					throw new SyntaxException("Expected closing square bracket for ExpandedPixel");
