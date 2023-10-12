@@ -61,7 +61,7 @@ public class Parser implements IParser {
 			IToken name = t;
 			t = lexer.next();
 			if(match(LPAREN)) {
-				t = lexer.next()
+				t = lexer.next();
 				List<NameDef> e = paramList();
 				t = lexer.next();
 				if(match(RPAREN)) {
@@ -75,27 +75,39 @@ public class Parser implements IParser {
 		}
 		throw new SyntaxException("No ident");
 	}
-	private Block block() throws PLCCompilerException { //Needs to be finished
-		List<BlockElem> l1 = new ArrayList<BlockElem>();
+
+	private Block block() throws PLCCompilerException {
+		List<BlockElem> l1 = new ArrayList<>();
 		IToken firstToken = t;
-		AST e0;
-		if(match(LT)) {
-			t = lexer.next();
-			if(match(COLON)) {
-				t = lexer.next();
-				while(match(RES_write, RES_do, RES_if, RETURN, IDENT, LT, RES_image, RES_pixel, RES_string, RES_boolean, RES_int, RES_void)) {
-					if(match(RES_image, RES_pixel, RES_string, RES_boolean, RES_int, RES_void)) {
-						e0 = declaration();
-					}
-					else {
-						e0 = statement();
-					}
-				}
-			}
-			throw new SyntaxException("No colon");
+
+		if (!match(Kind.LT)) {
+			throw new SyntaxException("Expected '<' at the start of block");
 		}
-		throw new SyntaxException("No less than");
+		t = lexer.next();  // Less Than
+
+		if (!match(Kind.COLON)) {
+			throw new SyntaxException("Expected ':' after '<'");
+		}
+		t = lexer.next();  // Colon
+
+		while (match(Kind.RES_write, Kind.RES_do, Kind.RES_if, Kind.RETURN, Kind.IDENT, Kind.LT, Kind.RES_image, Kind.RES_pixel, Kind.RES_string, Kind.RES_boolean, Kind.RES_int, Kind.RES_void)) {
+			BlockElem e0;
+			if (match(Kind.RES_image, Kind.RES_pixel, Kind.RES_string, Kind.RES_boolean, Kind.RES_int, Kind.RES_void)) {
+				e0 = declaration();
+			} else {
+				e0 = statement();
+			}
+			l1.add(e0);
+		}
+
+		if (!match(Kind.GT)) {
+			throw new SyntaxException("Expected '>' at the end of block");
+		}
+		t = lexer.next();  //  Greater Than
+
+		return new Block(firstToken, l1);
 	}
+
 
 	private Declaration declaration() throws PLCCompilerException { //Skeleton 
 		return null;
