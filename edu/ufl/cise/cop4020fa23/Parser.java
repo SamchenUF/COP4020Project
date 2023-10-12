@@ -97,7 +97,7 @@ public class Parser implements IParser {
 		}
 		throw new SyntaxException("No less than");
 	}
-	private List<NameDef> paramList() {
+	private List<NameDef> paramList() throws PLCCompilerException{
 		List<NameDef> l1 = new ArrayList<NameDef>();
 		NameDef e0 = nameDef();
 		l1.add(e0);
@@ -110,10 +110,10 @@ public class Parser implements IParser {
 		return l1;
 	}
 
-	private NameDef nameDef() {
+	private NameDef nameDef() throws PLCCompilerException {
 		IToken firstToken = t;
 		IToken type = type();
-		AST e0 = null;
+		Dimension e0 = null;
 		t = lexer.next();
 		if(match(LSQUARE)) {
 			t = lexer.next();
@@ -121,11 +121,21 @@ public class Parser implements IParser {
 			t = lexer.next();
 		}
 		if(match(IDENT)) {
-			return new NameDef(t, type, e0, IDENT);
+			IToken ident = t;
+			return new NameDef(t, type, e0, ident);
 		}
 		throw new SyntaxException("Not valid namedef");
 	}
 	
+	private Dimension dimension() throws PLCCompilerException {
+		IToken firsToken = t;
+		Expr e0 = null;
+		Expr e1 = null;
+		if(match(LSQUARE)) {
+			t = lexer.next();
+			e0 = expr();
+		}
+	}
 	private IToken type() throws PLCCompilerException {
 		IToken ret = t;
 		if(match(RES_image, RES_pixel, RES_int, RES_string, RES_void, RES_boolean)) {
@@ -190,7 +200,6 @@ public class Parser implements IParser {
 
 	// Method that parses conditional expressions
 	private Expr conditionalExpr(IToken firstToken) throws PLCCompilerException {
-		//IToken firstToken = t;
 		if (match(QUESTION)) {
 			t = lexer.next();
 			Expr expr1 = expr();
