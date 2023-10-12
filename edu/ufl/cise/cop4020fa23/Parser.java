@@ -31,6 +31,7 @@ public class Parser implements IParser {
 	public Parser(ILexer lexer) throws LexicalException {
 		super();
 		this.lexer = lexer;
+		t = lexer.next();
 	}
 
 	protected boolean match(Kind kind) {
@@ -50,11 +51,15 @@ public class Parser implements IParser {
 	@Override
 	public AST parse() throws PLCCompilerException {
 		AST e = program();
-		return e;
+		if(lexer.next().kind() == EOF) {
+			return e;
+		}
+		throw new PLCCompilerException("Not EOF");
 	}
 
 	private AST program() throws PLCCompilerException {
 		IToken firstToken = t;
+		List<NameDef> e = new ArrayList<NameDef>();
 		IToken type = type();
 		t = lexer.next();
 		if(match(IDENT)) {
@@ -62,12 +67,18 @@ public class Parser implements IParser {
 			t = lexer.next();
 			if(match(LPAREN)) {
 				t = lexer.next();
-				List<NameDef> e = paramList();
-				t = lexer.next();
+				if(!match(RPAREN)) {
+					e = paramList();
+					t = lexer.next();
+				}
 				if(match(RPAREN)) {
 					t = lexer.next();
 					Block f = block();
-					return new Program(firstToken, type, name, e, f);
+					//t = lexer.next();
+					if(lexer.next().kind() == (EOF)) {
+						return new Program(firstToken, type, name, e, f);
+					}
+					throw new SyntaxException("Not EOF");
 				}
 				throw new SyntaxException("No closing paren");
 			}
@@ -80,15 +91,10 @@ public class Parser implements IParser {
 		List<BlockElem> l1 = new ArrayList<>();
 		IToken firstToken = t;
 
-		if (!match(Kind.LT)) {
+		if (!match(Kind.BLOCK_OPEN)) {
 			throw new SyntaxException("Expected '<' at the start of block");
 		}
-		t = lexer.next();  // Consume the '<' token
-
-		if (!match(Kind.COLON)) {
-			throw new SyntaxException("Expected ':' after '<'");
-		}
-		t = lexer.next();  // Consume the ':' token
+		t = lexer.next();  // Consume the '<:' token
 
 		while (match(Kind.RES_write, Kind.RES_do, Kind.RES_if, Kind.RETURN, Kind.IDENT, Kind.LT, Kind.RES_image, Kind.RES_pixel, Kind.RES_string, Kind.RES_boolean, Kind.RES_int, Kind.RES_void)) {
 			BlockElem e0;
@@ -99,15 +105,13 @@ public class Parser implements IParser {
 			}
 			l1.add(e0);
 		}
-
-		if (!match(Kind.GT)) {
+		//t = lexer.next(); //comsume the last statement or declaration
+		if (!match(Kind.BLOCK_CLOSE)) {
 			throw new SyntaxException("Expected '>' at the end of block");
 		}
-		t = lexer.next();  //  Consume the '>' token
-
 		return new Block(firstToken, l1);
 	}
-
+	
 
 	private Declaration declaration() throws PLCCompilerException {
 		IToken firstToken = t;
@@ -173,12 +177,9 @@ public class Parser implements IParser {
 			List<GuardedBlock> guardedBlocks = new ArrayList<>();
 			t = lexer.next();  // Consume the "do" token
 			guardedBlocks.add(guardedBlock());
-			while (match(Kind.LSQUARE)) {
+			while (match(Kind.BOX)) {
 				t = lexer.next();  // Consume the "[" token
 				guardedBlocks.add(guardedBlock());
-				if (!match(Kind.RSQUARE)) {
-					throw new SyntaxException("Expected ']' after GuardedBlock");
-				}
 				t = lexer.next();  // Consume the "]" token
 			}
 			if (!match(Kind.RES_od)) {
@@ -192,12 +193,9 @@ public class Parser implements IParser {
 			List<GuardedBlock> guardedBlocks = new ArrayList<>();
 			t = lexer.next();  // Consume the "if" token
 			guardedBlocks.add(guardedBlock());
-			while (match(Kind.LSQUARE)) {
+			while (match(Kind.BOX)) {
 				t = lexer.next();  // Consume the "[" token
 				guardedBlocks.add(guardedBlock());
-				if (!match(Kind.RSQUARE)) {
-					throw new SyntaxException("Expected ']' after GuardedBlock");
-				}
 				t = lexer.next();  // Consume the "]" token
 			}
 			if (!match(Kind.RES_fi)) {
@@ -224,14 +222,14 @@ public class Parser implements IParser {
 
 
 	private GuardedBlock guardedBlock() throws PLCCompilerException {
+		IToken first = t;
 		Expr guard = expr();  // Parse the guard expression
-
-		if (!match(Kind.BLOCK_OPEN)) {  // Assuming '<:' begins a block
+		if (!match(Kind.RARROW)) {  // Assuming '<:' begins a block
 			throw new SyntaxException("Expected '<:' to start a block after guard at " + t);
 		}
 		Block block = block();
-
-		return new GuardedBlock(t, guard, block);
+		
+		return new GuardedBlock(first, guard, block);
 	}
 
 
@@ -332,7 +330,6 @@ public class Parser implements IParser {
 			}
 		}
 		else if (match(CONST)) {
-			t = lexer.next();
 			return new ConstExpr(firstToken);
 		}
 		// Parse an expanded pixel definition
@@ -453,6 +450,7 @@ public class Parser implements IParser {
 		Expr e0 = primaryExpr(t);
 		PixelSelector e1 = null;
 		ChannelSelector e2 = null;
+		t = lexer.next();
 		// Check for PixelSelector or epsilon
 		if (match(LSQUARE)) {
 			e1 = pixelSelector(e0);
@@ -516,7 +514,6 @@ public class Parser implements IParser {
 					t = lexer.next();
 					Expr blue = expr();
 					if (match(RSQUARE)) {
-						t = lexer.next();
 						return new ExpandedPixelExpr(firstToken, red, green, blue);
 					}
 					throw new SyntaxException("Expected closing square bracket for ExpandedPixel");
