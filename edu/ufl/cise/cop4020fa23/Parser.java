@@ -49,7 +49,6 @@ public class Parser implements IParser {
 
 	@Override
 	public AST parse() throws PLCCompilerException {
-		IToken firsToken = t;
 		AST e = program();
 		return e;
 	}
@@ -76,7 +75,7 @@ public class Parser implements IParser {
 		}
 		throw new SyntaxException("No ident");
 	}
-	private Block block() {
+	private Block block() throws PLCCompilerException { //Needs to be finished
 		List<BlockElem> l1 = new ArrayList<BlockElem>();
 		IToken firstToken = t;
 		AST e0;
@@ -97,7 +96,16 @@ public class Parser implements IParser {
 		}
 		throw new SyntaxException("No less than");
 	}
-	private List<NameDef> paramList() throws PLCCompilerException{
+
+	private Declaration declaration() throws PLCCompilerException { //Skeleton 
+		return null;
+	}
+
+	private Statement statement() throws PLCCompilerException { //Skeleton
+		return null;
+	}
+
+	private List<NameDef> paramList() throws PLCCompilerException {
 		List<NameDef> l1 = new ArrayList<NameDef>();
 		NameDef e0 = nameDef();
 		l1.add(e0);
@@ -105,7 +113,6 @@ public class Parser implements IParser {
 			t = lexer.next();
 			e0 = nameDef();
 			l1.add(e0);
-			t = lexer.next();
 		}
 		return l1;
 	}
@@ -122,7 +129,7 @@ public class Parser implements IParser {
 		}
 		if(match(IDENT)) {
 			IToken ident = t;
-			return new NameDef(t, type, e0, ident);
+			return new NameDef(firstToken, type, e0, ident);
 		}
 		throw new SyntaxException("Not valid namedef");
 	}
@@ -134,8 +141,16 @@ public class Parser implements IParser {
 		if(match(LSQUARE)) {
 			t = lexer.next();
 			e0 = expr();
+			t = lexer.next();
+			e1 = expr();
+			if(match(RSQUARE)) {
+				return new Dimension(firsToken, e0, e1);
+			}
+			throw new SyntaxException("No closing bracket");
 		}
+		throw new SyntaxException("No opening bracket");
 	}
+
 	private IToken type() throws PLCCompilerException {
 		IToken ret = t;
 		if(match(RES_image, RES_pixel, RES_int, RES_string, RES_void, RES_boolean)) {
