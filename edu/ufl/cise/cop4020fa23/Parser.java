@@ -71,9 +71,8 @@ public class Parser implements IParser {
 					e = paramList();
 				}
 				if(match(RPAREN)) {
-					t = lexer.next();
+					t = lexer.next(); //consume rparen
 					Block f = block();
-					//t = lexer.next();
 					if(lexer.next().kind() == (EOF)) {
 						return new Program(firstToken, type, name, e, f);
 					}
@@ -99,17 +98,19 @@ public class Parser implements IParser {
 			BlockElem e0;
 			if (match(RES_image, RES_pixel, RES_string, RES_boolean, RES_int, RES_void)) {
 				e0 = declaration();
-				//t = lexer.next();
+				
 			} else {
 				e0 = statement();
-				//t = lexer.next();
 			}
 			t = lexer.next();
+			if(match(SEMI)) {
+				t = lexer.next();
+			}
 			l1.add(e0);
 		}
 		//t = lexer.next(); //comsume the last statement or declaration
 		if (!match(Kind.BLOCK_CLOSE)) {
-			throw new SyntaxException("Expected '>' at the end of block");
+			throw new SyntaxException("Expected ':>' at the end of block");
 		}
 		return new Block(firstToken, l1);
 	}
@@ -133,21 +134,19 @@ public class Parser implements IParser {
 
 
 	private LValue lValue() throws PLCCompilerException {
-		if (!match(Kind.IDENT)) {
-			throw new SyntaxException("Expected an identifier for LValue at " + t);
-		}
-
+		//Already matched ident in statement
 		IToken nameToken = t;
 		t = lexer.next();  // Consume the identifier
 
 		PixelSelector pixelSelector = null;
 		if (match(Kind.LSQUARE)) {
-			pixelSelector = pixelSelector(null);
+			pixelSelector = pixelSelector();
+			t = lexer.next();
 		}
-
 		ChannelSelector channelSelector = null;
 		if (match(Kind.COLON)) {
 			channelSelector = channelSelector();
+			t = lexer.next();
 		}
 
 		return new LValue(nameToken, nameToken, pixelSelector, channelSelector);
@@ -159,10 +158,7 @@ public class Parser implements IParser {
 		if (match(Kind.RES_write)) {
 			t = lexer.next();  // Consume the "write" token
 			Expr expr = expr();
-			t = lexer.next();
-			if(match(SEMI)) {
-				return new WriteStatement(firstToken, expr);
-			}
+			return new WriteStatement(firstToken, expr);
 		}
 		// If the statement is an assignment: LValue = Expr
 		else if (match(Kind.IDENT)) {  // Assuming LValue starts with an IDENT
@@ -170,10 +166,7 @@ public class Parser implements IParser {
 			if (match(Kind.ASSIGN)) {
 				t = lexer.next();  // Consume the "=" token
 				Expr expr = expr();
-				t = lexer.next();
-				if(match(SEMI)) {
-					return new AssignmentStatement(firstToken, lvalue, expr);
-				}
+				return new AssignmentStatement(firstToken, lvalue, expr);
 			} 
 			else {
 				throw new SyntaxException("Expected '=' after LValue");
@@ -346,6 +339,7 @@ public class Parser implements IParser {
 			}
 		}
 		else if (match(CONST)) {
+			t = lexer.next();
 			return new ConstExpr(firstToken);
 		}
 		// Parse an expanded pixel definition
@@ -358,6 +352,7 @@ public class Parser implements IParser {
 
 	// Method that parses conditional expressions
 	private Expr conditionalExpr(IToken firstToken) throws PLCCompilerException {
+		//IToken firstToken = t;
 		if (match(QUESTION)) {
 			t = lexer.next();
 			Expr expr1 = expr();
@@ -466,10 +461,9 @@ public class Parser implements IParser {
 		Expr e0 = primaryExpr(t);
 		PixelSelector e1 = null;
 		ChannelSelector e2 = null;
-		t = lexer.next();
 		// Check for PixelSelector or epsilon
 		if (match(LSQUARE)) {
-			e1 = pixelSelector(e0);
+			e1 = pixelSelector();
 			t = lexer.next();
 		}
 		// Check for ChannelSelector or epsilon
@@ -499,7 +493,7 @@ public class Parser implements IParser {
 
 
 	// Method that parses pixel selectors
-	private PixelSelector pixelSelector(Expr e0) throws PLCCompilerException {
+	private PixelSelector pixelSelector() throws PLCCompilerException {
 		IToken firstToken = t;
 		if (match(LSQUARE)) {
 			t = lexer.next();
@@ -530,6 +524,7 @@ public class Parser implements IParser {
 					t = lexer.next();
 					Expr blue = expr();
 					if (match(RSQUARE)) {
+						t = lexer.next();
 						return new ExpandedPixelExpr(firstToken, red, green, blue);
 					}
 					throw new SyntaxException("Expected closing square bracket for ExpandedPixel");
