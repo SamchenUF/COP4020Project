@@ -107,11 +107,24 @@ public class Parser implements IParser {
 
 		return new Block(firstToken, l1);
 	}
-	
 
-	private Declaration declaration() throws PLCCompilerException { //Skeleton 
-		return null;
+
+	private Declaration declaration() throws PLCCompilerException {
+		IToken firstToken = t;
+
+		// Parse the name definition
+		NameDef nDef = nameDef();
+
+		Expr initializer = null;
+
+		// Check if there's an initializer
+		if(match(Kind.EQ)) {
+			t = lexer.next();
+			initializer = expr();
+		}
+		return new Declaration(firstToken, nDef, initializer);
 	}
+
 
 	private LValue lValue() throws PLCCompilerException {
 		if (!match(Kind.IDENT)) {
