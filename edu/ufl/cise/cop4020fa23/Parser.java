@@ -106,6 +106,7 @@ public class Parser implements IParser {
 		t = lexer.next();  //  Greater Than
 
 		return new Block(firstToken, l1);
+	}
 	
 
 
