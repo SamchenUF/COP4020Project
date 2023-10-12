@@ -83,12 +83,12 @@ public class Parser implements IParser {
 		if (!match(Kind.LT)) {
 			throw new SyntaxException("Expected '<' at the start of block");
 		}
-		t = lexer.next();  // Less Than
+		t = lexer.next();  // Consume the '<' token
 
 		if (!match(Kind.COLON)) {
 			throw new SyntaxException("Expected ':' after '<'");
 		}
-		t = lexer.next();  // Colon
+		t = lexer.next();  // Consume the ':' token
 
 		while (match(Kind.RES_write, Kind.RES_do, Kind.RES_if, Kind.RETURN, Kind.IDENT, Kind.LT, Kind.RES_image, Kind.RES_pixel, Kind.RES_string, Kind.RES_boolean, Kind.RES_int, Kind.RES_void)) {
 			BlockElem e0;
@@ -103,20 +103,124 @@ public class Parser implements IParser {
 		if (!match(Kind.GT)) {
 			throw new SyntaxException("Expected '>' at the end of block");
 		}
-		t = lexer.next();  //  Greater Than
+		t = lexer.next();  //  Consume the '>' token
 
 		return new Block(firstToken, l1);
 	}
 	
 
-
 	private Declaration declaration() throws PLCCompilerException { //Skeleton 
 		return null;
 	}
 
-	private Statement statement() throws PLCCompilerException { //Skeleton
-		return null;
+	private LValue lValue() throws PLCCompilerException {
+		if (!match(Kind.IDENT)) {
+			throw new SyntaxException("Expected an identifier for LValue at " + t);
+		}
+
+		IToken nameToken = t;
+		t = lexer.next();  // Consume the identifier
+
+		PixelSelector pixelSelector = null;
+		if (match(Kind.LSQUARE)) {
+			pixelSelector = pixelSelector(null);
+		}
+
+		ChannelSelector channelSelector = null;
+		if (match(Kind.COLON)) {
+			channelSelector = channelSelector();
+		}
+
+		return new LValue(nameToken, nameToken, pixelSelector, channelSelector);
 	}
+
+
+	private Statement statement() throws PLCCompilerException {
+		IToken firstToken = t;
+
+		// If the statement starts with "write"
+		if (match(Kind.RES_write)) {
+			t = lexer.next();  // Consume the "write" token
+			Expr expr = expr();
+			return new WriteStatement(firstToken, expr);
+		}
+		// If the statement is an assignment: LValue = Expr
+		else if (match(Kind.IDENT)) {  // Assuming LValue starts with an IDENT
+			LValue lvalue = lValue();
+			if (match(Kind.ASSIGN)) {
+				t = lexer.next();  // Consume the "=" token
+				Expr expr = expr();
+				return new AssignmentStatement(firstToken, lvalue, expr);
+			} else {
+				throw new SyntaxException("Expected '=' after LValue");
+			}
+		}
+		// If the statement starts with "do ... od"
+		else if (match(Kind.RES_do)) {
+			List<GuardedBlock> guardedBlocks = new ArrayList<>();
+			t = lexer.next();  // Consume the "do" token
+			guardedBlocks.add(guardedBlock());
+			while (match(Kind.LSQUARE)) {
+				t = lexer.next();  // Consume the "[" token
+				guardedBlocks.add(guardedBlock());
+				if (!match(Kind.RSQUARE)) {
+					throw new SyntaxException("Expected ']' after GuardedBlock");
+				}
+				t = lexer.next();  // Consume the "]" token
+			}
+			if (!match(Kind.RES_od)) {
+				throw new SyntaxException("Expected 'od' after do-statement");
+			}
+			t = lexer.next();  // Consume the "od" token
+			return new DoStatement(firstToken, guardedBlocks);
+		}
+		// If the statement starts with "if ... fi"
+		else if (match(Kind.RES_if)) {
+			List<GuardedBlock> guardedBlocks = new ArrayList<>();
+			t = lexer.next();  // Consume the "if" token
+			guardedBlocks.add(guardedBlock());
+			while (match(Kind.LSQUARE)) {
+				t = lexer.next();  // Consume the "[" token
+				guardedBlocks.add(guardedBlock());
+				if (!match(Kind.RSQUARE)) {
+					throw new SyntaxException("Expected ']' after GuardedBlock");
+				}
+				t = lexer.next();  // Consume the "]" token
+			}
+			if (!match(Kind.RES_fi)) {
+				throw new SyntaxException("Expected 'fi' after if-statement");
+			}
+			t = lexer.next();  // Consume the "fi" token
+			return new IfStatement(firstToken, guardedBlocks);
+		}
+		// If the statement starts with "^"
+		else if (match(Kind.RETURN)) {
+			t = lexer.next();  // Consume the "^" token
+			Expr expr = expr();
+			return new ReturnStatement(firstToken, expr);
+		}
+		// If the statement starts with a block
+		else if (match(Kind.LT)) {
+			Block block = block();
+			return new StatementBlock(firstToken, block);
+		}
+		else {
+			throw new SyntaxException("Invalid statement starting at " + firstToken);
+		}
+	}
+
+
+	private GuardedBlock guardedBlock() throws PLCCompilerException {
+		Expr guard = expr();  // Parse the guard expression
+
+		if (!match(Kind.BLOCK_OPEN)) {  // Assuming '<:' begins a block
+			throw new SyntaxException("Expected '<:' to start a block after guard at " + t);
+		}
+		Block block = block();
+
+		return new GuardedBlock(t, guard, block);
+	}
+
 
 	private List<NameDef> paramList() throws PLCCompilerException {
 		List<NameDef> l1 = new ArrayList<NameDef>();
