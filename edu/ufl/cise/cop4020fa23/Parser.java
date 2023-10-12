@@ -64,12 +64,11 @@ public class Parser implements IParser {
 		t = lexer.next();
 		if(match(IDENT)) {
 			IToken name = t;
-			t = lexer.next();
+			t = lexer.next(); //consume ident
 			if(match(LPAREN)) {
-				t = lexer.next();
+				t = lexer.next(); //comsume lparen
 				if(!match(RPAREN)) {
 					e = paramList();
-					t = lexer.next();
 				}
 				if(match(RPAREN)) {
 					t = lexer.next();
@@ -154,10 +153,8 @@ public class Parser implements IParser {
 		return new LValue(nameToken, nameToken, pixelSelector, channelSelector);
 	}
 
-
 	private Statement statement() throws PLCCompilerException {
 		IToken firstToken = t;
-
 		// If the statement starts with "write"
 		if (match(Kind.RES_write)) {
 			t = lexer.next();  // Consume the "write" token
@@ -245,10 +242,12 @@ public class Parser implements IParser {
 		List<NameDef> l1 = new ArrayList<NameDef>();
 		NameDef e0 = nameDef();
 		l1.add(e0);
+		t = lexer.next(); //go to comma
 		while(match(COMMA)) {
-			t = lexer.next();
+			t = lexer.next(); //consume comma
 			e0 = nameDef();
 			l1.add(e0);
+			t = lexer.next(); //go to comma
 		}
 		return l1;
 	}
@@ -259,9 +258,8 @@ public class Parser implements IParser {
 		Dimension e0 = null;
 		t = lexer.next();
 		if(match(LSQUARE)) {
-			t = lexer.next();
 			e0 = dimension();
-			t = lexer.next();
+			t = lexer.next(); //consume close bracket
 		}
 		if(match(IDENT)) {
 			IToken ident = t;
