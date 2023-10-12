@@ -287,6 +287,16 @@ public class Parser implements IParser {
 		throw new SyntaxException("Not valid type");
 	}
 
+	private StatementBlock blockStatement() throws PLCCompilerException {
+		IToken firstToken = t;
+
+		// Parse the block of code
+		Block blockCode = block();
+
+		return new StatementBlock(firstToken, blockCode);
+	}
+
+
 	private Expr expr() throws PLCCompilerException {
 		IToken firstToken = t;
 
