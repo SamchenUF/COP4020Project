@@ -93,7 +93,6 @@ public class Parser implements IParser {
 			throw new SyntaxException("Expected '<:' at the start of block");
 		}
 		t = lexer.next();  // Consume the '<:' token
-
 		while (match(RES_write, RES_do, RES_if, RETURN, IDENT, LT, RES_image, RES_pixel, RES_string, RES_boolean, RES_int, RES_void, BLOCK_OPEN)) {
 			BlockElem e0;
 			if (match(RES_image, RES_pixel, RES_string, RES_boolean, RES_int, RES_void)) {
@@ -106,6 +105,7 @@ public class Parser implements IParser {
 				throw new SyntaxException("No semi to end");
 			}
 			t = lexer.next();
+			
 			l1.add(e0);
 		}
 		//t = lexer.next(); //comsume the last statement or declaration
@@ -126,10 +126,11 @@ public class Parser implements IParser {
 		Expr initializer = null;
 		t = lexer.next();
 		// Check if there's an initializer
-		if(match(Kind.EQ)) {
+		if(match(Kind.ASSIGN)) {
 			t = lexer.next();
 			initializer = expr();
 		}
+		
 		return new Declaration(firstToken, nDef, initializer);
 	}
 
