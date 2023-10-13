@@ -90,11 +90,11 @@ public class Parser implements IParser {
 		IToken firstToken = t;
 
 		if (!match(Kind.BLOCK_OPEN)) {
-			throw new SyntaxException("Expected '<' at the start of block");
+			throw new SyntaxException("Expected '<:' at the start of block");
 		}
 		t = lexer.next();  // Consume the '<:' token
 
-		while (match(RES_write, RES_do, RES_if, RETURN, IDENT, LT, RES_image, RES_pixel, RES_string, RES_boolean, RES_int, RES_void)) {
+		while (match(RES_write, RES_do, RES_if, RETURN, IDENT, LT, RES_image, RES_pixel, RES_string, RES_boolean, RES_int, RES_void, BLOCK_OPEN)) {
 			BlockElem e0;
 			if (match(RES_image, RES_pixel, RES_string, RES_boolean, RES_int, RES_void)) {
 				e0 = declaration();
@@ -102,13 +102,14 @@ public class Parser implements IParser {
 			} else {
 				e0 = statement();
 			}
-			t = lexer.next();
-			if(match(SEMI)) {
-				t = lexer.next();
+			if(!match(SEMI)) {
+				throw new SyntaxException("No semi to end");
 			}
+			t = lexer.next();
 			l1.add(e0);
 		}
 		//t = lexer.next(); //comsume the last statement or declaration
+
 		if (!match(Kind.BLOCK_CLOSE)) {
 			throw new SyntaxException("Expected ':>' at the end of block");
 		}
@@ -177,6 +178,7 @@ public class Parser implements IParser {
 			List<GuardedBlock> guardedBlocks = new ArrayList<>();
 			t = lexer.next();  // Consume the "do" token
 			guardedBlocks.add(guardedBlock());
+			t = lexer.next();
 			while (match(Kind.BOX)) {
 				t = lexer.next();  // Consume the "[" token
 				guardedBlocks.add(guardedBlock());
@@ -193,6 +195,7 @@ public class Parser implements IParser {
 			List<GuardedBlock> guardedBlocks = new ArrayList<>();
 			t = lexer.next();  // Consume the "if" token
 			guardedBlocks.add(guardedBlock());
+			t = lexer.next();
 			while (match(Kind.BOX)) {
 				t = lexer.next();  // Consume the "[" token
 				guardedBlocks.add(guardedBlock());
@@ -211,9 +214,10 @@ public class Parser implements IParser {
 			return new ReturnStatement(firstToken, expr);
 		}
 		// If the statement starts with a block
-		else if (match(Kind.LT)) {
-			Block block = block();
-			return new StatementBlock(firstToken, block);
+		else if (match(Kind.BLOCK_OPEN)) {
+			StatementBlock block = blockStatement();
+			t = lexer.next();
+			return block;
 		}
 		throw new PLCCompilerException("Not valid statement");
 	}
@@ -225,6 +229,7 @@ public class Parser implements IParser {
 		if (!match(Kind.RARROW)) {  // Assuming '<:' begins a block
 			throw new SyntaxException("Expected '<:' to start a block after guard at " + t);
 		}
+		t = lexer.next();
 		Block block = block();
 		
 		return new GuardedBlock(first, guard, block);
