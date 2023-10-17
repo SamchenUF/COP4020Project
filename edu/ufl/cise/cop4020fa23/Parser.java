@@ -109,7 +109,7 @@ public class Parser implements IParser {
 			
 			l1.add(e0);
 		}
-		//t = lexer.next(); //comsume the last statement or declaration
+		//t = lexer.next(); // comsume the last statement or declaration
 
 		if (!match(Kind.BLOCK_CLOSE)) {
 			throw new SyntaxException("Expected ':>' at the end of block");
@@ -254,13 +254,18 @@ public class Parser implements IParser {
 
 	private NameDef nameDef() throws PLCCompilerException {
 		IToken firstToken = t;
+
+		// Parse the type of the identifier
 		IToken type = type();
 		Dimension e0 = null;
 		t = lexer.next();
+
+		// Check if there's a dimension
 		if(match(LSQUARE)) {
 			e0 = dimension();
 			t = lexer.next(); //consume close bracket
 		}
+		// Check if the identifier is present
 		if(match(IDENT)) {
 			IToken ident = t;
 			return new NameDef(firstToken, type, e0, ident);
