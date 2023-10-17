@@ -45,6 +45,19 @@ import edu.ufl.cise.cop4020fa23.exceptions.SyntaxException;
 
 class ParserTest_starter {
 	static final int TIMEOUT_MILLIS = 1000;
+	static final boolean VERBOSE = true;
+
+
+	void show(Object obj) {
+   		if (VERBOSE) {
+      	System.out.println(obj);
+   		}
+	}
+
+	void checkIdentToken(IToken ident, String name) {
+   		assertEquals(ident.kind(), Kind.IDENT);
+   		assertEquals(ident.text(), name);
+		}
 
 	AST getAST(String input) throws PLCCompilerException {
 		return ComponentFactory.makeParser(input).parse();
@@ -704,5 +717,26 @@ class ParserTest_starter {
 			AST ast = getAST(input);
 		});
 	}
+
+  	@Test
+  	void testInvalidMultiIfState() throws PLCCompilerException {
+	String input = """
+			void p()<:
+			if z -> <:
+			int x;
+			:>
+			y -> <:
+			int x;
+			:>
+			fi;
+			:>
+		    """;
+	 	assertThrows(SyntaxException.class, () -> {
+			@SuppressWarnings("unused")
+			AST ast = getAST(input);
+		});
+  }
+  
+
 
 }

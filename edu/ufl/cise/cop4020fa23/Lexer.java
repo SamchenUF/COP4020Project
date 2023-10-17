@@ -14,7 +14,6 @@ public class Lexer implements ILexer {
 	int column;
 	char[] arr;
 	char current;
-	//boolean newRow = true;
 	int tempColumn;
 	private enum State {
 		START, HAVE_EQ, HAVE_AND, HAVE_LT, HAVE_GT, HAVE_STAR, HAVE_STRAIGHT, HAVE_LB, HAVE_COLON, HAVE_HASH, HAVE_DASH, HAVE_OR, HAVE_DIGIT, HAVE_ALPHA, HAVE_SLIT;
@@ -56,11 +55,10 @@ public class Lexer implements ILexer {
 				temp = false;
 			}
 			if(temp) {
-			current = input.charAt(i);
-			column++;
+				current = input.charAt(i);
+				column++;
 			}
 			if(newTok) {startPos = i;}
-			//newRow = false;
 			
 			switch (state) {
 
@@ -192,7 +190,7 @@ public class Lexer implements ILexer {
 							return new Token(Kind.RETURN, startPos, 1, arr, new SourceLocation(row, column));
 						}
 						default -> {
-							throw new LexicalException("Not valid input");
+							throw new LexicalException(current + " Is Not valid input");
 						}
 					}
 				}

@@ -51,7 +51,8 @@ public class Parser implements IParser {
 	@Override
 	public AST parse() throws PLCCompilerException {
 		AST e = program();
-		if(lexer.next().kind() == EOF) {
+		t = lexer.next();
+		if(match(EOF)) {
 			return e;
 		}
 		throw new PLCCompilerException("Not EOF");
