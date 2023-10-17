@@ -291,8 +291,10 @@ public class Parser implements IParser {
 		throw new SyntaxException("No opening bracket");
 	}
 
+	// Returns the current token if it matches any of the valid types, if not throw an exception
 	private IToken type() throws PLCCompilerException {
 		IToken ret = t;
+		// Check if the current token is one of the following valid types
 		if(match(RES_image, RES_pixel, RES_int, RES_string, RES_void, RES_boolean)) {
 			return ret;
 		} 
