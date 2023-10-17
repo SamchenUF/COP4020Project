@@ -109,7 +109,6 @@ public class Parser implements IParser {
 			
 			l1.add(e0);
 		}
-		//t = lexer.next(); // comsume the last statement or declaration
 
 		if (!match(Kind.BLOCK_CLOSE)) {
 			throw new SyntaxException("Expected ':>' at the end of block");
@@ -142,14 +141,16 @@ public class Parser implements IParser {
 		t = lexer.next();  // Consume the identifier
 
 		PixelSelector pixelSelector = null;
+		// Check if a pixel selector is after the identifier
 		if (match(Kind.LSQUARE)) {
 			pixelSelector = pixelSelector();
-			t = lexer.next();
+			t = lexer.next();	// Consume the token after the pixel selector
 		}
 		ChannelSelector channelSelector = null;
+		// Check if a channel selector is after the identifier or pixel selector
 		if (match(Kind.COLON)) {
 			channelSelector = channelSelector();
-			t = lexer.next();
+			t = lexer.next();	// Consume the token after the channel selector
 		}
 
 		return new LValue(nameToken, nameToken, pixelSelector, channelSelector);
@@ -242,12 +243,12 @@ public class Parser implements IParser {
 		List<NameDef> l1 = new ArrayList<NameDef>();
 		NameDef e0 = nameDef();
 		l1.add(e0);
-		t = lexer.next(); //go to comma
+		t = lexer.next(); // go to comma
 		while(match(COMMA)) {
-			t = lexer.next(); //consume comma
+			t = lexer.next(); // consume comma
 			e0 = nameDef();
 			l1.add(e0);
-			t = lexer.next(); //go to comma
+			t = lexer.next(); // go to comma
 		}
 		return l1;
 	}
