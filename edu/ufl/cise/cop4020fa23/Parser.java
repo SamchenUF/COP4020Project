@@ -277,11 +277,12 @@ public class Parser implements IParser {
 		IToken firsToken = t;
 		Expr e0 = null;
 		Expr e1 = null;
+		// Check if there's a dimension given by a '['
 		if(match(LSQUARE)) {
 			t = lexer.next();
-			e0 = expr();
+			e0 = expr();	// Parse the first expression inside the bracket
 			t = lexer.next();
-			e1 = expr();
+			e1 = expr();	// Parse the second expression inside the bracket
 			if(match(RSQUARE)) {
 				return new Dimension(firsToken, e0, e1);
 			}
