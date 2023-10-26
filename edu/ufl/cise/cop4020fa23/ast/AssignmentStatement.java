@@ -12,11 +12,6 @@ package edu.ufl.cise.cop4020fa23.ast;
 import java.util.Objects;
 
 import edu.ufl.cise.cop4020fa23.IToken;
-<<<<<<< HEAD
-import edu.ufl.cise.cop4020fa23.ast.LValue;
-import edu.ufl.cise.cop4020fa23.ast.Statement;
-=======
->>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 
 /**
@@ -82,7 +77,6 @@ public class AssignmentStatement extends Statement {
 	public Expr getE() {
 		return e;
 	}
-<<<<<<< HEAD
 
 
 
@@ -91,7 +85,5 @@ public class AssignmentStatement extends Statement {
 		return "AssignmentStatement [lValue=" + lValue + ", e=" + e + "]";
 	}
 	
-=======
->>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	
 }

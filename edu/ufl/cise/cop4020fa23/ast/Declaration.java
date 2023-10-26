@@ -14,7 +14,6 @@ import java.util.Objects;
 import edu.ufl.cise.cop4020fa23.IToken;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 
-<<<<<<< HEAD
 /**
  * 
  */
@@ -22,13 +21,6 @@ public class Declaration extends Block.BlockElem {
   
 	final NameDef nameDef;
 	final Expr initializer;
-=======
-public class Declaration extends Block.BlockElem {
-
-	final NameDef nameDef;
-	final Expr initializer;
-
->>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	/**
 	 * @param firstToken
 	 * @param nameDef
@@ -39,18 +31,10 @@ public class Declaration extends Block.BlockElem {
 		this.nameDef = nameDef;
 		this.initializer = initializer;
 	}
-<<<<<<< HEAD
-=======
-
->>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	@Override
 	public Object visit(ASTVisitor v, Object arg) throws PLCCompilerException {
 		return v.visitDeclaration(this, arg);
 	}
-<<<<<<< HEAD
-=======
-
->>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -58,14 +42,6 @@ public class Declaration extends Block.BlockElem {
 		result = prime * result + Objects.hash(initializer, nameDef);
 		return result;
 	}
-<<<<<<< HEAD
-=======
-
->>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
 		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
@@ -73,7 +49,6 @@ public class Declaration extends Block.BlockElem {
 		Declaration other = (Declaration) obj;
 		return Objects.equals(initializer, other.initializer) && Objects.equals(nameDef, other.nameDef);
 	}
-<<<<<<< HEAD
 	/**
 	 * @return the nameDef
 	 */
@@ -86,25 +61,10 @@ public class Declaration extends Block.BlockElem {
 	public Expr getInitializer() {
 		return initializer;
 	}
-=======
-
-	public NameDef getNameDef() {
-		return nameDef;
-	}
-
-	public Expr getInitializer() {
-		return initializer;
-	}
-
->>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	@Override
 	public String toString() {
 		return "Declaration [nameDef=" + nameDef + ", initializer=" + initializer + "]";
 	}
-<<<<<<< HEAD
 	
 	
-=======
-
->>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 }

@@ -15,7 +15,6 @@ import java.util.Objects;
 import edu.ufl.cise.cop4020fa23.IToken;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 
-<<<<<<< HEAD
 /**
  * 
  */
@@ -29,18 +28,11 @@ public class IfStatement extends Statement {
 	 * @param firstToken
 	 * @param guardedBlock
 	 */
-=======
-public class IfStatement extends Statement {
-
-	final List<GuardedBlock> guardedBlocks;
-
->>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	public IfStatement(IToken firstToken, List<GuardedBlock> guardedBlock) {
 		super(firstToken);
 		this.guardedBlocks = guardedBlock;
 	}
 
-<<<<<<< HEAD
 
 
 	@Override
@@ -50,13 +42,6 @@ public class IfStatement extends Statement {
 
 
 
-=======
-	@Override
-	public Object visit(ASTVisitor v, Object arg) throws PLCCompilerException {
-		return v.visitIfStatement(this, arg);
-	}
-
->>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -65,11 +50,8 @@ public class IfStatement extends Statement {
 		return result;
 	}
 
-<<<<<<< HEAD
 
 
-=======
->>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -82,28 +64,19 @@ public class IfStatement extends Statement {
 		return Objects.equals(guardedBlocks, other.guardedBlocks);
 	}
 
-<<<<<<< HEAD
 
 
-=======
->>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	public List<GuardedBlock> getGuardedBlocks() {
 		return guardedBlocks;
 	}
 
-<<<<<<< HEAD
 
 
-=======
->>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	@Override
 	public String toString() {
 		return "IfStatement [guardedBlock=" + guardedBlocks + "]";
 	}
-<<<<<<< HEAD
 	
 	
-=======
->>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 
 }
