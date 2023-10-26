@@ -718,24 +718,21 @@ class ParserTest_starter {
 		});
 	}
 
-  	@Test
-  	void testInvalidMultiIfState() throws PLCCompilerException {
-	String input = """
-			void p()<:
-			if z -> <:
-			int x;
-			:>
-			y -> <:
-			int x;
-			:>
-			fi;
-			:>
-		    """;
-	 	assertThrows(SyntaxException.class, () -> {
-			@SuppressWarnings("unused")
-			AST ast = getAST(input);
-		});
-  }
+	@Test
+	void testInvalidSingleDoState() throws PLCCompilerException {
+	   String input = """
+			 void p()<:
+				do z -> <:
+				int x;
+				:>
+				[]
+				od;
+			  :>
+			 """;
+	   SyntaxException e = assertThrows(SyntaxException.class, () -> getAST(input));
+	   show("Error message from testInvalidSingleDoState: " + e.getMessage());
+	}
+	
   
 
 
