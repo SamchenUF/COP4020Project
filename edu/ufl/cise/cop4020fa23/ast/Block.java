@@ -15,9 +15,12 @@ import java.util.Objects;
 import edu.ufl.cise.cop4020fa23.IToken;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 
+<<<<<<< HEAD
 /**
  * 
  */
+=======
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 public class Block extends AST {
 
 	public abstract static class BlockElem extends AST {
@@ -29,10 +32,14 @@ public class Block extends AST {
 
 	final List<BlockElem> elems;
 
+<<<<<<< HEAD
 	/**
 	 * @param firstToken
 	 * @param elems
 	 */
+=======
+
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	public Block(IToken firstToken, List<BlockElem> elems) {
 		super(firstToken);
 		this.elems = elems;
@@ -63,9 +70,12 @@ public class Block extends AST {
 		return Objects.equals(elems, other.elems);
 	}
 
+<<<<<<< HEAD
 	/**
 	 * @return the elems
 	 */
+=======
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	public List<BlockElem> getElems() {
 		return elems;
 	}

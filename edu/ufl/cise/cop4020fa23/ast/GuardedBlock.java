@@ -14,6 +14,7 @@ import java.util.Objects;
 import edu.ufl.cise.cop4020fa23.IToken;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 
+<<<<<<< HEAD
 /**
  * 
  */
@@ -26,15 +27,31 @@ public class GuardedBlock extends AST{
 	 * @param guard
 	 * @param block
 	 */
+=======
+public class GuardedBlock extends AST {
+
+	final Expr guard;
+	final Block block;
+
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	public GuardedBlock(IToken firstToken, Expr guard, Block block) {
 		super(firstToken);
 		this.guard = guard;
 		this.block = block;
 	}
+<<<<<<< HEAD
 	@Override
 	public Object visit(ASTVisitor v, Object arg) throws PLCCompilerException {
 		return v.visitGuardedBlock(this,arg);
 	}
+=======
+
+	@Override
+	public Object visit(ASTVisitor v, Object arg) throws PLCCompilerException {
+		return v.visitGuardedBlock(this, arg);
+	}
+
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -42,6 +59,10 @@ public class GuardedBlock extends AST{
 		result = prime * result + Objects.hash(block, guard);
 		return result;
 	}
+<<<<<<< HEAD
+=======
+
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -53,6 +74,7 @@ public class GuardedBlock extends AST{
 		GuardedBlock other = (GuardedBlock) obj;
 		return Objects.equals(block, other.block) && Objects.equals(guard, other.guard);
 	}
+<<<<<<< HEAD
 	/**
 	 * @return the guard
 	 */
@@ -65,11 +87,25 @@ public class GuardedBlock extends AST{
 	public Block getBlock() {
 		return block;
 	}
+=======
+
+	public Expr getGuard() {
+		return guard;
+	}
+
+	public Block getBlock() {
+		return block;
+	}
+
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	@Override
 	public String toString() {
 		return "GuardedBlock [guard=" + guard + ", block=" + block + "]";
 	}
+<<<<<<< HEAD
 	
 	
+=======
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 
 }

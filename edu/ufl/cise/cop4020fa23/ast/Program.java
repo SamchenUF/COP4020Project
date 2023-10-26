@@ -15,16 +15,20 @@ import java.util.Objects;
 import edu.ufl.cise.cop4020fa23.IToken;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 
+<<<<<<< HEAD
 
 /**
  * 
  */
+=======
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 public class Program extends AST {
 
 	final IToken typeToken;
 	final IToken nameToken;
 	final List<NameDef> params;
 	final Block block;
+<<<<<<< HEAD
 	
 	Type type;
 	
@@ -35,6 +39,9 @@ public class Program extends AST {
 	 * @param params
 	 * @param block
 	 */
+=======
+
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	public Program(IToken firstToken, IToken type, IToken name, List<NameDef> params, Block block) {
 		super(firstToken);
 		this.typeToken = type;
@@ -43,13 +50,19 @@ public class Program extends AST {
 		this.block = block;
 	}
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	@Override
 	public Object visit(ASTVisitor v, Object arg) throws PLCCompilerException {
 		return v.visitProgram(this, arg);
 	}
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -58,7 +71,10 @@ public class Program extends AST {
 		return result;
 	}
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -72,6 +88,7 @@ public class Program extends AST {
 				&& Objects.equals(params, other.params) && Objects.equals(typeToken, other.typeToken);
 	}
 
+<<<<<<< HEAD
 
 	public IToken getTypeToken() {
 		return typeToken;
@@ -84,25 +101,41 @@ public class Program extends AST {
 	public void setType(Type type) {
 		this.type = type;
 	}
+=======
+	public IToken getTypeToken() {
+		return typeToken;
+	}
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 
 	public IToken getNameToken() {
 		return nameToken;
 	}
+<<<<<<< HEAD
 	
+=======
+
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	public String getName() {
 		return nameToken.text();
 	}
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	public List<NameDef> getParams() {
 		return params;
 	}
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	public Block getBlock() {
 		return block;
 	}
 
+<<<<<<< HEAD
 
 	@Override
 	public String toString() {
@@ -110,4 +143,12 @@ public class Program extends AST {
 	}
 
 	
+=======
+	@Override
+	public String toString() {
+		return "Program [type=" + typeToken + ", name=" + nameToken.text() + ", params=" + params + ", block=" + block
+				+ "]";
+	}
+
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 }

@@ -36,9 +36,12 @@ public class ComponentFactory {
 		public static IParser makeParser(ILexer lexer) throws LexicalException {
 			return new Parser(lexer);
 		}
+<<<<<<< HEAD
 
 		public static ASTVisitor makeTypeChecker() {
 			return new TypeCheckVisitor();
 		}
+=======
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 		
 }

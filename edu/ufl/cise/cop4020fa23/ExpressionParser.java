@@ -1,11 +1,11 @@
 /*Copyright 2023 by Beverly A Sanders
- * 
- * This code is provided for solely for use of students in COP4020 Programming Language Concepts at the 
- * University of Florida during the fall semester 2023 as part of the course project.  
- * 
- * No other use is authorized. 
- * 
- * This code may not be posted on a public web site either during or after the course.  
+ *
+ * This code is provided for solely for use of students in COP4020 Programming Language Concepts at the
+ * University of Florida during the fall semester 2023 as part of the course project.
+ *
+ * No other use is authorized.
+ *
+ * This code may not be posted on a public web site either during or after the course.
  */
 package edu.ufl.cise.cop4020fa23;
 
@@ -46,7 +46,9 @@ import static edu.ufl.cise.cop4020fa23.Kind.CONST;
 import static edu.ufl.cise.cop4020fa23.Kind.BOOLEAN_LIT;
 
 import java.text.CollationElementIterator;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import edu.ufl.cise.cop4020fa23.ast.AST;
 import edu.ufl.cise.cop4020fa23.ast.BinaryExpr;
@@ -66,35 +68,34 @@ import edu.ufl.cise.cop4020fa23.exceptions.LexicalException;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 import edu.ufl.cise.cop4020fa23.exceptions.SyntaxException;
 /**
-Expr::=  ConditionalExpr | LogicalOrExpr    
-ConditionalExpr ::=  ?  Expr  :  Expr  :  Expr 
-LogicalOrExpr ::= LogicalAndExpr (    (   |   |   ||   ) LogicalAndExpr)*
-LogicalAndExpr ::=  ComparisonExpr ( (   &   |  &&   )  ComparisonExpr)*
-ComparisonExpr ::= PowExpr ( (< | > | == | <= | >=) PowExpr)*
-PowExpr ::= AdditiveExpr ** PowExpr |   AdditiveExpr
-AdditiveExpr ::= MultiplicativeExpr ( ( + | -  ) MultiplicativeExpr )*
-MultiplicativeExpr ::= UnaryExpr (( * |  /  |  % ) UnaryExpr)*
-UnaryExpr ::=  ( ! | - | length | width) UnaryExpr  |  UnaryExprPostfix
-UnaryExprPostfix::= PrimaryExpr (PixelSelector | ε ) (ChannelSelector | ε )
-PrimaryExpr ::= STRING_LIT | NUM_LIT |  BOOLEAN_LIT | IDENT | ( Expr ) | CONST | ExpandedPixel  
-ChannelSelector ::= : red | : green | : blue
-PixelSelector  ::= [ Expr , Expr ]
-ExpandedPixel ::= [ Expr , Expr , Expr ]
-Dimension  ::=  [ Expr , Expr ]                         
+ Expr::=  ConditionalExpr | LogicalOrExpr
+ ConditionalExpr ::=  ?  Expr  :  Expr  :  Expr
+ LogicalOrExpr ::= LogicalAndExpr (    (   |   |   ||   ) LogicalAndExpr)*
+ LogicalAndExpr ::=  ComparisonExpr ( (   &   |  &&   )  ComparisonExpr)*
+ ComparisonExpr ::= PowExpr ( (< | > | == | <= | >=) PowExpr)*
+ PowExpr ::= AdditiveExpr ** PowExpr |   AdditiveExpr
+ AdditiveExpr ::= MultiplicativeExpr ( ( + | -  ) MultiplicativeExpr )*
+ MultiplicativeExpr ::= UnaryExpr (( * |  /  |  % ) UnaryExpr)*
+ UnaryExpr ::=  ( ! | - | length | width) UnaryExpr  |  UnaryExprPostfix
+ UnaryExprPostfix::= PrimaryExpr (PixelSelector | ε ) (ChannelSelector | ε )
+ PrimaryExpr ::= STRING_LIT | NUM_LIT |  BOOLEAN_LIT | IDENT | ( Expr ) | CONST | ExpandedPixel
+ ChannelSelector ::= : red | : green | : blue
+ PixelSelector  ::= [ Expr , Expr ]
+ ExpandedPixel ::= [ Expr , Expr , Expr ]
+ Dimension  ::=  [ Expr , Expr ]
 
  */
 
 
-
 public class ExpressionParser implements IParser {
-	
+
 	final ILexer lexer;
 	private IToken t;
-	
+
 
 	/**
 	 * @param lexer
-	 * @throws LexicalException 
+	 * @throws LexicalException
 	 */
 	public ExpressionParser(ILexer lexer) throws LexicalException {
 		super();
@@ -102,10 +103,12 @@ public class ExpressionParser implements IParser {
 		t = lexer.next();
 	}
 
+	// Check if current token's kind matches the given kind
 	protected boolean match(Kind kind) {
-		return t.kind() == kind;		
+		return t.kind() == kind;
 	}
 
+	// Check if current token's kind matches any of the given kinds
 	protected boolean match(Kind... kinds) {
 		for (Kind k : kinds) {
 			if (k == t.kind()) {
@@ -124,27 +127,19 @@ public class ExpressionParser implements IParser {
 
 	private Expr expr() throws PLCCompilerException {
 		IToken firstToken = t;
+
+		// Check if expression starts with a question mark, which indicates a conditional expression
 		if(match(QUESTION)) {
 			return conditionalExpr(firstToken);
 		}
+		// If it's not a conditional expression, parse as a logical OR expression
 		else {
 			return logicalOrExpr();
 		}
 	}
 
-	/*private void postFix(IToken firstToken) throws PLCCompilerException {
-		primaryExpr(firstToken);
-		t = lexer.next();
-		if(!match(EOF)) {
-			pixelSelect(t);
-			t = lexer.next();
-		}
-		if (!match(EOF)) {
-			channelSelector(t);
-			t = lexer.next();
-		}
-	}*/
 
+	// Method that parses primary expressions like literals, identifiers, parenthesized expressions, and constants
 	private Expr primaryExpr(IToken firstToken) throws PLCCompilerException {
 		if (match(STRING_LIT)) {
 			t = lexer.next();
@@ -162,6 +157,7 @@ public class ExpressionParser implements IParser {
 			t  = lexer.next();
 			return new IdentExpr(firstToken);
 		}
+		// For parenthesized expressions, parse the enclosed expression
 		else if (match(LPAREN)) {
 			Expr e0 = null;
 			t = lexer.next();
@@ -175,12 +171,15 @@ public class ExpressionParser implements IParser {
 			t = lexer.next();
 			return new ConstExpr(firstToken);
 		}
+		// Parse an expanded pixel definition
 		else if (match(LSQUARE)) {
 			return expandedPixel();
 		}
+		// If there's no recognized form that is found, throw an exception
 		throw new SyntaxException("Not valid syntax");
 	}
 
+	// Method that parses conditional expressions
 	private Expr conditionalExpr(IToken firstToken) throws PLCCompilerException {
 		//IToken firstToken = t;
 		if (match(QUESTION)) {
@@ -201,6 +200,7 @@ public class ExpressionParser implements IParser {
 		throw new SyntaxException("Incorrect start for ConditionalExpr");
 	}
 
+	// Method that parses logical OR expressions
 	private Expr logicalOrExpr() throws PLCCompilerException {
 		Expr e0 = logicalAndExpr();
 		while (match(BITOR, OR)) {
@@ -212,6 +212,7 @@ public class ExpressionParser implements IParser {
 		return e0;
 	}
 
+	// Method that parses logical AND expressions
 	private Expr logicalAndExpr() throws PLCCompilerException {
 		Expr e0 = comparisonExpr();
 		while (match(BITAND, AND)) {
@@ -223,6 +224,7 @@ public class ExpressionParser implements IParser {
 		return e0;
 	}
 
+	// Method that parses comparison expressions
 	private Expr comparisonExpr() throws PLCCompilerException {
 		Expr e0 = powExpr();
 		while (match(LT, GT, EQ, LE, GE)) {
@@ -234,6 +236,7 @@ public class ExpressionParser implements IParser {
 		return e0;
 	}
 
+	// Method that parses power expressions
 	private Expr powExpr() throws PLCCompilerException {
 		Expr e0 = additiveExpr();
 		if (match(EXP)) {
@@ -245,6 +248,7 @@ public class ExpressionParser implements IParser {
 		return e0;
 	}
 
+	// Method that parses additive expressions
 	private Expr additiveExpr() throws PLCCompilerException {
 		Expr e0 = multiplicativeExpr();
 		while (match(PLUS, MINUS)) {
@@ -256,6 +260,7 @@ public class ExpressionParser implements IParser {
 		return e0;
 	}
 
+	// Method that parses multiplicative expressions
 	private Expr multiplicativeExpr() throws PLCCompilerException {
 		Expr e0 = unaryExpr();
 		while (match(TIMES, DIV, MOD)) {
@@ -267,6 +272,7 @@ public class ExpressionParser implements IParser {
 		return e0;
 	}
 
+	// Method that parsed unary expressions
 	private Expr unaryExpr() throws PLCCompilerException {
 		IToken firsToken = t;
 		if (match(BANG, MINUS, RES_width, RES_height)) {
@@ -279,6 +285,7 @@ public class ExpressionParser implements IParser {
 		}
 	}
 
+	// Method that parses postfix unary expressions
 	private Expr unaryExprPostfix(IToken first) throws PLCCompilerException {
 		Expr e0 = primaryExpr(t);
 		PixelSelector e1 = null;
@@ -293,11 +300,12 @@ public class ExpressionParser implements IParser {
 			e2 = channelSelector();
 		}
 		if(e1 != null || e2 != null) {
-			e0 = new PostfixExpr(first, e0, e1, e2);
+		e0 = new PostfixExpr(first, e0, e1, e2);
 		}
 		return e0;
 	}
 
+	// Method that parses channel selectors like :blue, :green, and :red
 	private ChannelSelector channelSelector() throws PLCCompilerException {
 		IToken firstToken = t;
 		if (match(COLON)) {
@@ -313,6 +321,7 @@ public class ExpressionParser implements IParser {
 	}
 
 
+	// Method that parses pixel selectors
 	private PixelSelector pixelSelector(Expr e0) throws PLCCompilerException {
 		IToken firstToken = t;
 		if (match(LSQUARE)) {
@@ -331,6 +340,7 @@ public class ExpressionParser implements IParser {
 		throw new SyntaxException("Incorrect start for PixelSelector");
 	}
 
+	// Method that parses expanded pixel expressions
 	private Expr expandedPixel() throws PLCCompilerException {
 		IToken firstToken = t;
 		if (match(LSQUARE)) {
@@ -343,6 +353,7 @@ public class ExpressionParser implements IParser {
 					t = lexer.next();
 					Expr blue = expr();
 					if (match(RSQUARE)) {
+						t = lexer.next();
 						return new ExpandedPixelExpr(firstToken, red, green, blue);
 					}
 					throw new SyntaxException("Expected closing square bracket for ExpandedPixel");
@@ -355,3 +366,4 @@ public class ExpressionParser implements IParser {
 	}
 
 }
+

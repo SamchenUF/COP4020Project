@@ -545,4 +545,42 @@ class LexerTest {
      	checkIdent("false",lexer.next());
      	checkIdent("true",lexer.next());     	
     }
+	@Test
+	void test21() throws Exception {
+		String input = """
+				void p()<:
+				if z -> <:
+				int x;
+				:>
+				y -> <:
+				int x;
+				:>
+				fi;
+				:>
+		    	""";
+		ILexer lexer = ComponentFactory.makeLexer(input);
+		checkToken(RES_void, "void", lexer.next());
+		checkToken(IDENT, "p", lexer.next());
+		checkToken(Kind.LPAREN, "(", lexer.next());
+		checkToken(Kind.RPAREN, ")", lexer.next());
+		checkToken(BLOCK_OPEN, "<:", lexer.next());
+		checkToken(RES_if, "if", lexer.next());
+		checkToken(IDENT, "z", lexer.next());
+		checkToken(RARROW, "->", lexer.next());
+		checkToken(BLOCK_OPEN, "<:", lexer.next());
+		checkToken(RES_int, "int", lexer.next());
+		checkToken(IDENT, "x", lexer.next());
+		checkToken(SEMI, ";", lexer.next());
+		checkToken(Kind.BLOCK_CLOSE, ":>", lexer.next());
+		checkToken(IDENT, "y", lexer.next());
+		checkToken(RARROW, "->", lexer.next());
+		checkToken(BLOCK_OPEN, "<:", lexer.next());
+		checkToken(RES_int, "int", lexer.next());
+		checkToken(IDENT, "x", lexer.next());
+		checkToken(SEMI, ";", lexer.next());
+		checkToken(Kind.BLOCK_CLOSE, ":>", lexer.next());
+		checkToken(RES_fi, "fi", lexer.next());
+		checkToken(SEMI, ";", lexer.next());
+		checkToken(Kind.BLOCK_CLOSE, ":>", lexer.next());
+	}
 }

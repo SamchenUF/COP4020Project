@@ -14,6 +14,7 @@ import java.util.Objects;
 import edu.ufl.cise.cop4020fa23.IToken;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 
+<<<<<<< HEAD
 /**
  * 
  */
@@ -22,6 +23,12 @@ public class StatementBlock extends Statement {
 	final Block block;
 	
 	
+=======
+public class StatementBlock extends Statement {
+
+	final Block block;
+
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	/**
 	 * @param firstToken
 	 * @param block
@@ -31,13 +38,19 @@ public class StatementBlock extends Statement {
 		this.block = block;
 	}
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	@Override
 	public Object visit(ASTVisitor v, Object arg) throws PLCCompilerException {
 		return v.visitBlockStatement(this, arg);
 	}
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -46,7 +59,10 @@ public class StatementBlock extends Statement {
 		return result;
 	}
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -59,17 +75,26 @@ public class StatementBlock extends Statement {
 		return Objects.equals(block, other.block);
 	}
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	public Block getBlock() {
 		return block;
 	}
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	@Override
 	public String toString() {
 		return "StatementBlock [block=" + block + "]";
 	}
+<<<<<<< HEAD
 	
 	
+=======
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 
 }

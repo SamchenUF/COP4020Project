@@ -14,13 +14,17 @@ import java.util.Objects;
 import edu.ufl.cise.cop4020fa23.IToken;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 
+<<<<<<< HEAD
 /**
  * 
  */
+=======
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 public class Dimension extends AST {
 
 	final Expr width;
 	final Expr height;
+<<<<<<< HEAD
 	
 	
 	
@@ -29,39 +33,54 @@ public class Dimension extends AST {
 	 * @param width
 	 * @param height
 	 */
+=======
+
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	public Dimension(IToken firstToken, Expr width, Expr height) {
 		super(firstToken);
 		this.width = width;
 		this.height = height;
 	}
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	@Override
 	public Object visit(ASTVisitor v, Object arg) throws PLCCompilerException {
 		return v.visitDimension(this, arg);
 	}
 
+<<<<<<< HEAD
 
 
 	/**
 	 * @return the width
 	 */
+=======
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	public Expr getWidth() {
 		return width;
 	}
 
+<<<<<<< HEAD
 
 
 	/**
 	 * @return the height
 	 */
+=======
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	public Expr getHeight() {
 		return height;
 	}
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -70,8 +89,11 @@ public class Dimension extends AST {
 		return result;
 	}
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -84,12 +106,18 @@ public class Dimension extends AST {
 		return Objects.equals(height, other.height) && Objects.equals(width, other.width);
 	}
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	@Override
 	public String toString() {
 		return "Dimension [width=" + width + ", height=" + height + "]";
 	}
 
+<<<<<<< HEAD
 	
+=======
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 }

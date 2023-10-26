@@ -14,6 +14,7 @@ import java.util.Objects;
 import edu.ufl.cise.cop4020fa23.IToken;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 
+<<<<<<< HEAD
 /**
  * 
  */
@@ -27,20 +28,32 @@ public class ReturnStatement extends Statement {
 	 * @param firstToken
 	 * @param e
 	 */
+=======
+public class ReturnStatement extends Statement {
+
+	final Expr e;
+
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	public ReturnStatement(IToken firstToken, Expr e) {
 		super(firstToken);
 		this.e = e;
 	}
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	@Override
 	public Object visit(ASTVisitor v, Object arg) throws PLCCompilerException {
 		return v.visitReturnStatement(this, arg);
 	}
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -49,8 +62,11 @@ public class ReturnStatement extends Statement {
 		return result;
 	}
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -63,19 +79,28 @@ public class ReturnStatement extends Statement {
 		return Objects.equals(e, other.e);
 	}
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	public Expr getE() {
 		return e;
 	}
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	@Override
 	public String toString() {
 		return "ReturnStatement [e=" + e + "]";
 	}
+<<<<<<< HEAD
 	
 	
+=======
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 
 }

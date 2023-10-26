@@ -12,52 +12,29 @@ package edu.ufl.cise.cop4020fa23.ast;
 import java.util.Objects;
 
 import edu.ufl.cise.cop4020fa23.IToken;
-<<<<<<< HEAD
-import edu.ufl.cise.cop4020fa23.ast.LValue;
-import edu.ufl.cise.cop4020fa23.ast.Statement;
-=======
->>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 
-/**
- * 
- */
-public class AssignmentStatement extends Statement {
-	
-	final LValue lValue;
-	final Expr e;
-	
-	
+public class WriteStatement extends Statement {
 
-	/**
-	 * @param firstToken
-	 * @param lValue
-	 * @param e
-	 */
-	public AssignmentStatement(IToken firstToken, LValue lValue, Expr e) {
+	final Expr expr;
+
+	public WriteStatement(IToken firstToken, Expr expr) {
 		super(firstToken);
-		this.lValue = lValue;
-		this.e = e;
+		this.expr = expr;
 	}
-
-
 
 	@Override
 	public Object visit(ASTVisitor v, Object arg) throws PLCCompilerException {
-		return v.visitAssignmentStatement(this, arg);
+		return v.visitWriteStatement(this, arg);
 	}
-
-
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + Objects.hash(e, lValue);
+		result = prime * result + Objects.hash(expr);
 		return result;
 	}
-
-
 
 	@Override
 	public boolean equals(Object obj) {
@@ -67,31 +44,17 @@ public class AssignmentStatement extends Statement {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		AssignmentStatement other = (AssignmentStatement) obj;
-		return Objects.equals(e, other.e) && Objects.equals(lValue, other.lValue);
+		WriteStatement other = (WriteStatement) obj;
+		return Objects.equals(expr, other.expr);
 	}
 
-
-
-	public LValue getlValue() {
-		return lValue;
+	public Expr getExpr() {
+		return expr;
 	}
-
-
-
-	public Expr getE() {
-		return e;
-	}
-<<<<<<< HEAD
-
-
 
 	@Override
 	public String toString() {
-		return "AssignmentStatement [lValue=" + lValue + ", e=" + e + "]";
+		return "WriteStatement [expr=" + expr + "]";
 	}
-	
-=======
->>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
-	
+
 }

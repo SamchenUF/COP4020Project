@@ -17,6 +17,7 @@ public abstract class Expr extends AST {
 		super(firstToken);
 	}
 
+<<<<<<< HEAD
 	Type type;  
 
 	public Type getType() {
@@ -27,4 +28,6 @@ public abstract class Expr extends AST {
 		this.type = type;
 	}
 	
+=======
+>>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 }
