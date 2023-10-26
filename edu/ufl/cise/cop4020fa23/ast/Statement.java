@@ -10,21 +10,14 @@
 package edu.ufl.cise.cop4020fa23.ast;
 
 import edu.ufl.cise.cop4020fa23.IToken;
+import edu.ufl.cise.cop4020fa23.ast.Block.BlockElem;
 
-public abstract class Expr extends AST {
+public abstract class Statement extends BlockElem {
 
-	public Expr(IToken firstToken) {
+	public Statement(IToken firstToken) {
 		super(firstToken);
 	}
-
-	Type type;  
-
-	public Type getType() {
-		return type;
-	}
-
-	public void setType(Type type) {
-		this.type = type;
-	}
 	
+
+
 }

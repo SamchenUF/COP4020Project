@@ -9,6 +9,7 @@
  */
 package edu.ufl.cise.cop4020fa23;
 
+import edu.ufl.cise.cop4020fa23.ast.ASTVisitor;
 import edu.ufl.cise.cop4020fa23.exceptions.LexicalException;
 
 /**
@@ -26,6 +27,18 @@ public class ComponentFactory {
 		
 		public static IParser makeExpressionParser(String input) throws LexicalException {
 			return new ExpressionParser(makeLexer(input));
+		}
+		
+		public static IParser makeParser(String input) throws LexicalException {
+			return new Parser(makeLexer(input));
+		}
+		
+		public static IParser makeParser(ILexer lexer) throws LexicalException {
+			return new Parser(lexer);
+		}
+
+		public static ASTVisitor makeTypeChecker() {
+			return new TypeCheckVisitor();
 		}
 		
 }
