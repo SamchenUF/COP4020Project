@@ -17,10 +17,7 @@ public abstract class Statement extends BlockElem {
 	public Statement(IToken firstToken) {
 		super(firstToken);
 	}
-<<<<<<< HEAD
 	
 
-=======
->>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 
 }

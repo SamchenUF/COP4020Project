@@ -14,7 +14,6 @@ import java.util.Objects;
 import edu.ufl.cise.cop4020fa23.IToken;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 
-<<<<<<< HEAD
 /**
  * 
  */
@@ -32,34 +31,19 @@ public class NameDef extends AST {
 	 * @param dimension
 	 */
 	public NameDef(IToken firstToken, IToken typeToken, Dimension dimension, IToken identToken ) {
-=======
-public class NameDef extends AST {
-
-	final IToken typeToken;
-	final IToken identToken;
-	final Dimension dimension;
-
-	public NameDef(IToken firstToken, IToken typeToken, Dimension dimension, IToken identToken) {
->>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 		super(firstToken);
 		this.typeToken = typeToken;
 		this.identToken = identToken;
 		this.dimension = dimension;
 	}
 
-<<<<<<< HEAD
 
-=======
->>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	@Override
 	public Object visit(ASTVisitor v, Object arg) throws PLCCompilerException {
 		return v.visitNameDef(this, arg);
 	}
 
-<<<<<<< HEAD
 
-=======
->>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -68,10 +52,7 @@ public class NameDef extends AST {
 		return result;
 	}
 
-<<<<<<< HEAD
 
-=======
->>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -85,18 +66,14 @@ public class NameDef extends AST {
 				&& Objects.equals(typeToken, other.typeToken);
 	}
 
-<<<<<<< HEAD
 
 	/**
 	 * @return the type
 	 */
-=======
->>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	public IToken getTypeToken() {
 		return typeToken;
 	}
 
-<<<<<<< HEAD
 	public Type getType() {
 		return Type.kind2type(typeToken.kind());
 	}
@@ -104,18 +81,13 @@ public class NameDef extends AST {
 	/**
 	 * @return the ident
 	 */
-=======
->>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	public IToken getIdentToken() {
 		return identToken;
 	}
 
-<<<<<<< HEAD
 	/**
 	 * @return the dimension
 	 */
-=======
->>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 	public Dimension getDimension() {
 		return dimension;
 	}
@@ -126,7 +98,6 @@ public class NameDef extends AST {
 
 	@Override
 	public String toString() {
-<<<<<<< HEAD
 		return "NameDef [type=" + getType() + ", name=" + getName() + ", dimension=" + dimension + "]";
 	}
 
@@ -143,9 +114,4 @@ public class NameDef extends AST {
 //	}
 	
 	
-=======
-		return "NameDef [typeToken=" + typeToken + ", identToken=" + identToken + ", dimension=" + dimension + "]";
-	}
-
->>>>>>> 884ec4636f77576108bb0b4cec7465eb83379a59
 }
