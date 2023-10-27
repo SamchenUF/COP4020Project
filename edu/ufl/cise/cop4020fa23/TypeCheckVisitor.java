@@ -1,38 +1,20 @@
 package edu.ufl.cise.cop4020fa23;
 
-import edu.ufl.cise.cop4020fa23.ast.ASTVisitor;
-import edu.ufl.cise.cop4020fa23.ast.AssignmentStatement;
-import edu.ufl.cise.cop4020fa23.ast.BinaryExpr;
-import edu.ufl.cise.cop4020fa23.ast.Block;
-import edu.ufl.cise.cop4020fa23.ast.BooleanLitExpr;
-import edu.ufl.cise.cop4020fa23.ast.ChannelSelector;
-import edu.ufl.cise.cop4020fa23.ast.ConditionalExpr;
-import edu.ufl.cise.cop4020fa23.ast.ConstExpr;
-import edu.ufl.cise.cop4020fa23.ast.Declaration;
-import edu.ufl.cise.cop4020fa23.ast.Dimension;
-import edu.ufl.cise.cop4020fa23.ast.DoStatement;
-import edu.ufl.cise.cop4020fa23.ast.ExpandedPixelExpr;
-import edu.ufl.cise.cop4020fa23.ast.GuardedBlock;
-import edu.ufl.cise.cop4020fa23.ast.IdentExpr;
-import edu.ufl.cise.cop4020fa23.ast.IfStatement;
-import edu.ufl.cise.cop4020fa23.ast.LValue;
-import edu.ufl.cise.cop4020fa23.ast.NameDef;
-import edu.ufl.cise.cop4020fa23.ast.NumLitExpr;
-import edu.ufl.cise.cop4020fa23.ast.PixelSelector;
-import edu.ufl.cise.cop4020fa23.ast.PostfixExpr;
-import edu.ufl.cise.cop4020fa23.ast.Program;
-import edu.ufl.cise.cop4020fa23.ast.ReturnStatement;
-import edu.ufl.cise.cop4020fa23.ast.StatementBlock;
-import edu.ufl.cise.cop4020fa23.ast.StringLitExpr;
-import edu.ufl.cise.cop4020fa23.ast.UnaryExpr;
-import edu.ufl.cise.cop4020fa23.ast.WriteStatement;
+import edu.ufl.cise.cop4020fa23.ast.*;
+import edu.ufl.cise.cop4020fa23.Kind;
+import edu.ufl.cise.cop4020fa23.exceptions.TypeCheckException;
+import edu.ufl.cise.cop4020fa23.exceptions.LexicalException;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 
 //Idk if this class is supposed to be created here
-public class TypeCheckVistor implements ASTVisitor{
+public class TypeCheckVisitor implements ASTVisitor{
+    public TypeCheckVisitor() throws LexicalException {
+        //I think this is where the symbol table should be made?
+    }
     @Override
     public Object visitAssignmentStatement(AssignmentStatement assignmentStatement, Object arg) throws PLCCompilerException {
         // TODO Auto-generated method stub
+
         throw new UnsupportedOperationException("Unimplemented method 'visitAssignmentStatement'");
     }
 
@@ -140,8 +122,12 @@ public class TypeCheckVistor implements ASTVisitor{
 
     @Override
     public Object visitProgram(Program program, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitProgram'");
+        //Base code that just returns the type does not do anyy type checking
+        Type type = Type.kind2type(program.getTypeToken().kind());
+        program.setType(type);
+        System.out.println(type);
+        return type;
+        //throw new UnsupportedOperationException("Unimplemented method 'visitProgram'");
     }
 
     @Override
@@ -153,6 +139,7 @@ public class TypeCheckVistor implements ASTVisitor{
     @Override
     public Object visitStringLitExpr(StringLitExpr stringLitExpr, Object arg) throws PLCCompilerException {
         // TODO Auto-generated method stub
+        Type type = stringLitExpr.getType();
         throw new UnsupportedOperationException("Unimplemented method 'visitStringLitExpr'");
     }
 
