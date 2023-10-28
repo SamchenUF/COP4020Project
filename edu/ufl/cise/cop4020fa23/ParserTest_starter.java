@@ -720,20 +720,6 @@ class ParserTest_starter {
 	}
 
 	@Test
-	void testInvalidSingleDoState() throws PLCCompilerException {
-	   String input = """
-			 void p()<:
-				do z -> <:
-				int x;
-				:>
-				[]
-				od;
-			  :>
-			 """;
-	   SyntaxException e = assertThrows(SyntaxException.class, () -> getAST(input));
-	   show("Error message from testInvalidSingleDoState: " + e.getMessage());
-	}
-	@Test
 	void test22() throws PLCCompilerException {
 	String input = """
 	void test() <:

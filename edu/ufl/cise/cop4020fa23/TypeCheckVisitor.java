@@ -62,8 +62,12 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitDeclaration(Declaration declaration, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitDeclaration'");
+        Type nameType = (Type)declaration.visit(this, arg);
+        Type exprType = (Type)declaration.visit(this, arg);
+        if (declaration.getInitializer() == null || nameType == exprType || (exprType == Type.STRING && nameType == Type.IMAGE)) {
+            
+        }
+        throw new TypeCheckException("Didn't meet condition for declaration type");
     }
 
     @Override
@@ -90,7 +94,7 @@ public class TypeCheckVisitor implements ASTVisitor{
         if (guardedBlock.getGuard().getType() == Type.BOOLEAN) {
             return Type.BOOLEAN;
         }
-        throw new UnsupportedOperationException("Unimplemented method 'visitGuardedBlock'");
+        throw new TypeCheckException("Guard type is not boolean");
     }
 
     @Override
@@ -113,19 +117,32 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitNameDef(NameDef nameDef, Object arg) throws PLCCompilerException {
-        if (nameDef.getDimension() == null) {
-            Type type = nameDef.getType();
-            ST.add(nameDef.toString(), nameDef);
-            return type;
+        Type type = Type.kind2type(nameDef.getTypeToken().kind());
+        //Checks if the dimension is empty, if it is then check if the types are one of the allowed one
+        if (nameDef.getDimension() == null) { //if th type isn't one of the allowed one then throw error
+            if (type != Type.INT && type != Type.BOOLEAN && type != Type.STRING && type != Type.PIXEL && type != Type.IMAGE) {
+                throw new TypeCheckException("Type not allowed for a empty dimension");
+            }
         }
-        throw new UnsupportedOperationException("Unimplemented method 'visitNameDef'");
+        else { //If a nonempty dimension is not image type then throw image
+            if (type != Type.IMAGE) {
+                throw new TypeCheckException("Type not allowed for a nonempty dimension");
+            }
+        }
+        //This runs only if the 1 of 2 cases pass: dim is empty and types are good or dim is not empty and type is image
+        if(ST.lookup(nameDef.getName()) == null) {
+                ST.add(nameDef.getName(), nameDef);
+                return type;
+        }
+        else {
+            throw new TypeCheckException("Alreay in symbol table");
+        }
     }
 
     @Override
     public Object visitNumLitExpr(NumLitExpr numLitExpr, Object arg) throws PLCCompilerException {
         numLitExpr.setType(Type.INT);
         return Type.INT;
-        //throw new UnsupportedOperationException("Unimplemented method 'visitNumLitExpr'");
     }
 
     @Override
@@ -146,7 +163,7 @@ public class TypeCheckVisitor implements ASTVisitor{
         Type type = Type.kind2type(program.getTypeToken().kind());
         program.setType(type);
         if (type == null) {
-            throw new UnsupportedOperationException("Can't be null type");
+            throw new TypeCheckException("Can't be null type");
         }
         ST.enterScope();
         List<NameDef> paramList = program.getParams();
