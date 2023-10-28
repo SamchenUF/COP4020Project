@@ -125,7 +125,6 @@ public class TypeCheckVisitor implements ASTVisitor{
         //Base code that just returns the type does not do anyy type checking
         Type type = Type.kind2type(program.getTypeToken().kind());
         program.setType(type);
-        System.out.println(type);
         return type;
         //throw new UnsupportedOperationException("Unimplemented method 'visitProgram'");
     }
@@ -140,7 +139,10 @@ public class TypeCheckVisitor implements ASTVisitor{
     public Object visitStringLitExpr(StringLitExpr stringLitExpr, Object arg) throws PLCCompilerException {
         // TODO Auto-generated method stub
         Type type = stringLitExpr.getType();
-        throw new UnsupportedOperationException("Unimplemented method 'visitStringLitExpr'");
+        stringLitExpr.setType(type);
+        System.out.println(type);
+        return type;
+        //throw new UnsupportedOperationException("Unimplemented method 'visitStringLitExpr'");
     }
 
     @Override
