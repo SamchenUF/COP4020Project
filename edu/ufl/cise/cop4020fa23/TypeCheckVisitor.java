@@ -9,7 +9,7 @@ import edu.ufl.cise.cop4020fa23.exceptions.TypeCheckException;
 import edu.ufl.cise.cop4020fa23.exceptions.LexicalException;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 
-//Idk if this class is supposed to be created here
+// Idk if this class is supposed to be created here
 public class TypeCheckVisitor implements ASTVisitor{
     public TypeCheckVisitor() throws LexicalException {
         //I think this is where the symbol table should be made?
