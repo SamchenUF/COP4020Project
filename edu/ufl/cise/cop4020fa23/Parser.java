@@ -99,7 +99,8 @@ public class Parser implements IParser {
 			if (match(RES_image, RES_pixel, RES_string, RES_boolean, RES_int, RES_void)) {
 				e0 = declaration();
 				
-			} else {
+			} 
+			else {
 				e0 = statement();
 			}
 			if(!match(SEMI)) {
@@ -129,6 +130,7 @@ public class Parser implements IParser {
 		if(match(Kind.ASSIGN)) {
 			t = lexer.next();
 			initializer = expr();
+			//t = lexer.next();
 		}
 		
 		return new Declaration(firstToken, nDef, initializer);
@@ -368,7 +370,6 @@ public class Parser implements IParser {
 
 	// Method that parses conditional expressions
 	private Expr conditionalExpr(IToken firstToken) throws PLCCompilerException {
-		//IToken firstToken = t;
 		if (match(QUESTION)) {
 			t = lexer.next();
 			Expr expr1 = expr();
@@ -485,6 +486,7 @@ public class Parser implements IParser {
 		// Check for ChannelSelector or epsilon
 		if (match(COLON)) {
 			e2 = channelSelector();
+			t = lexer.next();
 		}
 		if(e1 != null || e2 != null) {
 		e0 = new PostfixExpr(first, e0, e1, e2);

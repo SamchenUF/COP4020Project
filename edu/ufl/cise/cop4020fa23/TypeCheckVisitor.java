@@ -1,56 +1,23 @@
 package edu.ufl.cise.cop4020fa23;
 
 import edu.ufl.cise.cop4020fa23.ast.*;
+import edu.ufl.cise.cop4020fa23.ast.Block.BlockElem;
 
 import static edu.ufl.cise.cop4020fa23.Kind.STRING_LIT;
 
+
+import java.util.List;
+import edu.ufl.cise.cop4020fa23.SymbolTable;
 import edu.ufl.cise.cop4020fa23.Kind;
 import edu.ufl.cise.cop4020fa23.exceptions.TypeCheckException;
 import edu.ufl.cise.cop4020fa23.exceptions.LexicalException;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 
-// Idk if this class is supposed to be created here
 public class TypeCheckVisitor implements ASTVisitor{
-    public TypeCheckVisitor() throws LexicalException {
-        //I think this is where the symbol table should be made?
-        class SymbolTable {
-            private class TableEntry {
-                NameDef nameDef;
-                int scopeId;
-                TableEntry previous;
-
-                public TableEntry(NameDef nameDef, int scopeId, TableEntry previous) {
-                    this.nameDef = nameDef;
-                    this.scopeId = scopeId;
-                    this.previous = previous;
-                }
-            }
-
-            private Map<String, TableEntry> table = new HashMap<>();
-            private Stack<Integer> scopeStack = new Stack<>();
-            private int currentScopeId = 0;
-
-            void enterScope() {
-                scopeStack.push(currentScopeId++);
-            }
-
-            void leaveScope() {
-                scopeStack.pop();
-            }
-
-            void add(String name, NameDef nameDef) {
-                table.put(name, new TableEntry(nameDef, scopeStack.peek(), table.get(name)));
-            }
-
-            NameDef lookup(String name) {
-                TableEntry entry = table.get(name);
-                while (entry != null && !scopeStack.contains(entry.scopeId)) {
-                    entry = entry.previous;
-                }
-                return entry != null ? entry.nameDef : null;
-            }
+        private SymbolTable ST;
+        public TypeCheckVisitor() throws LexicalException {
+            ST = new SymbolTable();  
         }
-    }
     @Override
     public Object visitAssignmentStatement(AssignmentStatement assignmentStatement, Object arg) throws PLCCompilerException {
         // TODO Auto-generated method stub
@@ -60,14 +27,19 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitBinaryExpr(BinaryExpr binaryExpr, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
+        
         throw new UnsupportedOperationException("Unimplemented method 'visitBinaryExpr'");
     }
 
     @Override
     public Object visitBlock(Block block, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitBlock'");
+        ST.enterScope();
+        List<BlockElem> blockList = block.getElems();
+        for (BlockElem elem : blockList) {
+            elem.visit(this, arg);
+        }
+        ST.leaveScope();
+        return null;
     }
 
     @Override
@@ -115,6 +87,9 @@ public class TypeCheckVisitor implements ASTVisitor{
     @Override
     public Object visitGuardedBlock(GuardedBlock guardedBlock, Object arg) throws PLCCompilerException {
         // TODO Auto-generated method stub
+        if (guardedBlock.getGuard().getType() == Type.BOOLEAN) {
+            return Type.BOOLEAN;
+        }
         throw new UnsupportedOperationException("Unimplemented method 'visitGuardedBlock'");
     }
 
@@ -138,13 +113,16 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitNameDef(NameDef nameDef, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
+        if (nameDef.getDimension() == null) {
+            Type type = nameDef.getType();
+            ST.add(nameDef.toString(), nameDef);
+            return type;
+        }
         throw new UnsupportedOperationException("Unimplemented method 'visitNameDef'");
     }
 
     @Override
     public Object visitNumLitExpr(NumLitExpr numLitExpr, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
         numLitExpr.setType(Type.INT);
         return Type.INT;
         //throw new UnsupportedOperationException("Unimplemented method 'visitNumLitExpr'");
@@ -167,8 +145,17 @@ public class TypeCheckVisitor implements ASTVisitor{
         //Base code that just returns the type does not do anyy type checking
         Type type = Type.kind2type(program.getTypeToken().kind());
         program.setType(type);
+        if (type == null) {
+            throw new UnsupportedOperationException("Can't be null type");
+        }
+        ST.enterScope();
+        List<NameDef> paramList = program.getParams();
+        for (NameDef parameters : paramList) {
+                parameters.visit(this, arg);
+            }   
+        program.getBlock().visit(this, arg);
+        ST.leaveScope();
         return type;
-        //throw new UnsupportedOperationException("Unimplemented method 'visitProgram'");
     }
 
     @Override

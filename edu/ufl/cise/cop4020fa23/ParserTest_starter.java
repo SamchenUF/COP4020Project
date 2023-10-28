@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 
 import java.util.List;
 
@@ -732,8 +733,34 @@ class ParserTest_starter {
 	   SyntaxException e = assertThrows(SyntaxException.class, () -> getAST(input));
 	   show("Error message from testInvalidSingleDoState: " + e.getMessage());
 	}
-	
-  
-
-
+	@Test
+	void test22() throws PLCCompilerException {
+	String input = """
+	void test() <:
+	int a = 2[1,1]:green;
+	:>
+	""";
+	AST ast = getAST(input);
+	Program program0 = checkProgram(ast, "void", "test");
+	List<NameDef> params1 = program0.getParams();
+	assertEquals(0, params1.size());
+	Block programBlock2 = ((Program) ast).getBlock();
+	List<BlockElem> blockElemList3 = programBlock2.getElems();
+	assertEquals(1, blockElemList3.size());
+	BlockElem blockElem4 = ((List<BlockElem>) blockElemList3).get(0);
+	checkDec(blockElem4);
+	NameDef nameDef5 = ((Declaration) blockElem4).getNameDef();
+	checkNameDef(nameDef5, "int", "a");
+	Expr expr6 = ((Declaration) blockElem4).getInitializer();
+	checkPostfixExpr(expr6, true, true);
+	Expr expr7 = ((PostfixExpr) expr6).primary();
+	checkNumLitExpr(expr7, 2);
+	PixelSelector pixel8 = ((PostfixExpr) expr6).pixel();
+	Expr x9 = ((PixelSelector) pixel8).xExpr();
+	checkNumLitExpr(x9, 1);
+	Expr y10 = ((PixelSelector) pixel8).yExpr();
+	checkNumLitExpr(y10, 1);
+	ChannelSelector channel11 = ((PostfixExpr) expr6).channel();
+	checkChannelSelector(channel11, Kind.RES_green);
+	}
 }
