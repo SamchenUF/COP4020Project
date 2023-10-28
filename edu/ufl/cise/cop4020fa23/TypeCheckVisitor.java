@@ -1,6 +1,9 @@
 package edu.ufl.cise.cop4020fa23;
 
 import edu.ufl.cise.cop4020fa23.ast.*;
+
+import static edu.ufl.cise.cop4020fa23.Kind.STRING_LIT;
+
 import edu.ufl.cise.cop4020fa23.Kind;
 import edu.ufl.cise.cop4020fa23.exceptions.TypeCheckException;
 import edu.ufl.cise.cop4020fa23.exceptions.LexicalException;
@@ -105,7 +108,9 @@ public class TypeCheckVisitor implements ASTVisitor{
     @Override
     public Object visitNumLitExpr(NumLitExpr numLitExpr, Object arg) throws PLCCompilerException {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitNumLitExpr'");
+        numLitExpr.setType(Type.INT);
+        return Type.INT;
+        //throw new UnsupportedOperationException("Unimplemented method 'visitNumLitExpr'");
     }
 
     @Override
@@ -138,10 +143,8 @@ public class TypeCheckVisitor implements ASTVisitor{
     @Override
     public Object visitStringLitExpr(StringLitExpr stringLitExpr, Object arg) throws PLCCompilerException {
         // TODO Auto-generated method stub
-        Type type = stringLitExpr.getType();
-        stringLitExpr.setType(type);
-        System.out.println(type);
-        return type;
+        stringLitExpr.setType(Type.STRING);
+        return Type.STRING;
         //throw new UnsupportedOperationException("Unimplemented method 'visitStringLitExpr'");
     }
 
