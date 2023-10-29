@@ -158,8 +158,13 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitIdentExpr(IdentExpr identExpr, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitIdentExpr'");
+        if(ST.lookup(identExpr.getName()) != null) {
+            identExpr.setNameDef(ST.lookup(identExpr.getName()));
+            identExpr.setType((Type)(identExpr.getNameDef().visit(this, arg)));
+            return identExpr.getType();
+        }
+
+        throw new TypeCheckException("Doesn't exist in symbolTable");
     }
 
     @Override
@@ -176,7 +181,7 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitNameDef(NameDef nameDef, Object arg) throws PLCCompilerException {
-        Type type = nameDef.getType();
+        Type type = Type.kind2type(nameDef.getTypeToken().kind());
         //Checks if the dimension is empty, if it is then check if the types are one of the allowed one
         if (nameDef.getDimension() == null) { //if the type isn't one of the allowed one then throw error
             if (type != Type.INT && type != Type.BOOLEAN && type != Type.STRING && type != Type.PIXEL && type != Type.IMAGE) {
@@ -256,8 +261,8 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitWriteStatement(WriteStatement writeStatement, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitWriteStatement'");
+        writeStatement.getExpr().visit(this, arg);
+        return writeStatement;
     }
 
     @Override
