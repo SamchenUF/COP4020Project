@@ -87,13 +87,10 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitBlockStatement(StatementBlock statementBlock, Object arg) throws PLCCompilerException {
-        for(BlockElem elem : statementBlock.getBlock().getElems()) {
-            elem.visit(this, arg);
-        }
-        return statementBlock;
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visitBlockStatement'");
     }
 
-    
     @Override
     public Object visitChannelSelector(ChannelSelector channelSelector, Object arg) throws PLCCompilerException {
         // TODO Auto-generated method stub
@@ -170,7 +167,6 @@ public class TypeCheckVisitor implements ASTVisitor{
             identExpr.setType((Type)(identExpr.getNameDef().visit(this, arg)));
             return identExpr.getType();
         }
-
         throw new TypeCheckException("Doesn't exist in symbolTable");
     }
 
@@ -202,13 +198,9 @@ public class TypeCheckVisitor implements ASTVisitor{
             }
         }
         //This runs only if the 1 of 2 cases pass: dim is empty and types are good or dim is not empty and type is image
-        if(ST.lookup(nameDef.getName()) == null) {
-            ST.add(nameDef.getName(), nameDef);
-            return type;
-        }
-        else {
-            throw new TypeCheckException("Already in symbol table");
-        }
+        ST.add(nameDef.getName(), ST.lookup(nameDef.getName()));
+        return type;
+        
     }
 
     @Override
