@@ -188,10 +188,15 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitLValue(LValue lValue, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitLValue'");
+        NameDef def = ST.lookup(lValue.getName());
+        if (def != null) {
+            lValue.setType(def.getType());
+            return def.getType();
+        }
+        throw new TypeCheckException("LValue not found in symbol table");
     }
 
+    
     @Override
     public Object visitNameDef(NameDef nameDef, Object arg) throws PLCCompilerException {
         Type type = Type.kind2type(nameDef.getTypeToken().kind());
