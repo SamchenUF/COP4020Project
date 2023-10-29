@@ -128,8 +128,6 @@ public class TypeCheckVisitor implements ASTVisitor{
         }
         Type exprType = (Type)declaration.getInitializer().visit(this, arg);
         Type nameType = (Type)declaration.getNameDef().visit(this, arg);
-        System.out.println(exprType);
-        System.out.println(nameType);
         if (exprType == nameType || (exprType == Type.STRING && nameType == Type.IMAGE)) {
             return nameType;
         }
@@ -252,11 +250,14 @@ public class TypeCheckVisitor implements ASTVisitor{
     @Override
     public Object visitPixelSelector(PixelSelector pixelSelector, Object arg) throws PLCCompilerException {
         // visit the expression representing the x-coordinate of the pixel
+        System.out.println(arg);
         pixelSelector.xExpr().visit(this, arg);
         // visit the expression representing the y-coordinate of the pixel
         pixelSelector.yExpr().visit(this, arg);
         // after processing the x and y expressions, return the PIXEL type
         return Type.PIXEL;
+        
+        
     }
 
 
@@ -265,7 +266,7 @@ public class TypeCheckVisitor implements ASTVisitor{
         // get the type of the primary expression
         Type exprType = (Type)postfixExpr.primary().visit(this, arg);
 
-        // if there's a pixel selection post-fix operator, visit it
+        /*// if there's a pixel selection post-fix operator, visit it
         if (postfixExpr.pixel() != null) {
             postfixExpr.pixel().visit(this, arg);
         }
@@ -279,7 +280,33 @@ public class TypeCheckVisitor implements ASTVisitor{
 
         // set the type of the postfix expression
         postfixExpr.setType(exprType);
-        return exprType;
+        return exprType;*/
+        if (postfixExpr.pixel() == null && postfixExpr.channel() == null) {
+            postfixExpr.setType(exprType);
+            return exprType;
+        }
+        if (exprType == Type.IMAGE && postfixExpr.pixel() != null && postfixExpr.channel() == null) {
+            postfixExpr.setType(Type.PIXEL);
+             postfixExpr.pixel().visit(this, arg);
+            return Type.PIXEL;
+        }
+        if (exprType == Type.IMAGE && postfixExpr.pixel() != null && postfixExpr.channel() != null) {
+            postfixExpr.channel().visit(this, arg);
+            postfixExpr.pixel().visit(this, arg);
+            postfixExpr.setType(Type.INT);
+            return Type.INT;
+        }
+        if (exprType == Type.IMAGE && postfixExpr.pixel() == null && postfixExpr.channel() != null) {
+            postfixExpr.channel().visit(this, arg);
+            postfixExpr.setType(Type.IMAGE);
+            return Type.IMAGE;
+        }
+        if (exprType == Type.PIXEL && postfixExpr.pixel() == null && postfixExpr.channel() != null) {
+            postfixExpr.channel().visit(this, arg);
+            postfixExpr.setType(Type.INT);
+            return Type.INT;
+        }
+        throw new TypeCheckException("Not inferpostfixtype");
     }
 
 
