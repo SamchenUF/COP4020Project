@@ -26,14 +26,21 @@ public class TypeCheckVisitor implements ASTVisitor{
     public Object visitAssignmentStatement(AssignmentStatement assignmentStatement, Object arg) throws PLCCompilerException {
         LValue lValue = assignmentStatement.getlValue();
         Type lValueType = (Type) lValue.visit(this, arg);
+
         // visit the expression on the right hand side (RValue) to determine its type
         Type exprType = (Type) assignmentStatement.getE().visit(this, arg);
-        if(lValueType == exprType) {
+
+        if(lValueType != null && lValueType == exprType) {
             // if the types of LValue and the RValue are the same type, return the type
             return lValueType;
         }
+
+        System.out.println("LValue Type: " + lValueType);
+        System.out.println("Expr Type: " + exprType);
+
         throw new TypeCheckException("Type mismatch in assignment");
     }
+
 
     @Override
     public Object visitBinaryExpr(BinaryExpr binaryExpr, Object arg) throws PLCCompilerException {
@@ -210,16 +217,24 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitLValue(LValue lValue, Object arg) throws PLCCompilerException {
+        // if there's a pixel selector, the LValue refers to a pixel of the image
+        if (lValue.getPixelSelector() != null) {
+            return Type.PIXEL;
+        }
+
         // look up the LValue's name in the symbol table to get its definition
         NameDef def = ST.lookup(lValue.getName());
+
         // if the definition is found in the symbol table
         if (def != null) {
             // set the LValue's type based on the definition's type that was found
             lValue.setType(def.getType());
             return def.getType();
         }
+
         throw new TypeCheckException("LValue not found in symbol table");
     }
+
 
 
     @Override
@@ -252,12 +267,19 @@ public class TypeCheckVisitor implements ASTVisitor{
     @Override
     public Object visitPixelSelector(PixelSelector pixelSelector, Object arg) throws PLCCompilerException {
         // visit the expression representing the x-coordinate of the pixel
-        pixelSelector.xExpr().visit(this, arg);
+        Type xType = (Type) pixelSelector.xExpr().visit(this, arg);
         // visit the expression representing the y-coordinate of the pixel
-        pixelSelector.yExpr().visit(this, arg);
+        Type yType = (Type) pixelSelector.yExpr().visit(this, arg);
+
+        // ensure both x and y are of type INT
+        if (xType != Type.INT || yType != Type.INT) {
+            throw new TypeCheckException("Pixel selector coordinates should be of type INT");
+        }
+
         // after processing the x and y expressions, return the PIXEL type
         return Type.PIXEL;
     }
+
 
 
     @Override
