@@ -196,7 +196,7 @@ public class TypeCheckVisitor implements ASTVisitor{
         throw new TypeCheckException("LValue not found in symbol table");
     }
 
-    
+
     @Override
     public Object visitNameDef(NameDef nameDef, Object arg) throws PLCCompilerException {
         Type type = Type.kind2type(nameDef.getTypeToken().kind());
@@ -227,9 +227,11 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitPixelSelector(PixelSelector pixelSelector, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitPixelSelector'");
+        pixelSelector.xExpr().visit(this, arg);
+        pixelSelector.yExpr().visit(this, arg);
+        return Type.PIXEL;
     }
+
 
     @Override
     public Object visitPostfixExpr(PostfixExpr postfixExpr, Object arg) throws PLCCompilerException {
