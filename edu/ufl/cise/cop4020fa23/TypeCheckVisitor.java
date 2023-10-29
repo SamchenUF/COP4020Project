@@ -267,8 +267,7 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitReturnStatement(ReturnStatement returnStatement, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitReturnStatement'");
+        return returnStatement.getE().visit(this, arg);
     }
 
     @Override
