@@ -96,7 +96,7 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitChannelSelector(ChannelSelector channelSelector, Object arg) throws PLCCompilerException {
-        return Type.PIXEL;
+        return Type.kind2type(channelSelector.color());
         // idk if we should be returning "Type.PIXEL", because this is assuming that a color channel is part of a pixel
         // in the future if we add more specific types for color channels (like RED, GREEN, BLUE, or ALPHA),
         // then we might need a more detailed method
@@ -154,12 +154,18 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitExpandedPixelExpr(ExpandedPixelExpr expandedPixelExpr, Object arg) throws PLCCompilerException {
-        return Type.PIXEL; // assuming an expanded pixel always returns a pixel type
+        Type red = (Type)expandedPixelExpr.getRed().visit(this, arg);
+        Type blue = (Type)expandedPixelExpr.getBlue().visit(this, arg);
+        Type green = (Type)expandedPixelExpr.getGreen().visit(this, arg);
+        if (red == Type.INT && green == Type.INT && blue == Type.INT) {
+            expandedPixelExpr.setType(Type.PIXEL);
+            return Type.PIXEL;
+        }
+        throw new TypeCheckException("Expanded pixel not all int");
     }
 
     @Override
     public Object visitGuardedBlock(GuardedBlock guardedBlock, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
         if (guardedBlock.getGuard().getType() == Type.BOOLEAN) {
             return Type.BOOLEAN;
         }
