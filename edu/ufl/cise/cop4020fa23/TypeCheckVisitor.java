@@ -4,11 +4,12 @@ import edu.ufl.cise.cop4020fa23.ast.*;
 import edu.ufl.cise.cop4020fa23.ast.Block.BlockElem;
 
 import static edu.ufl.cise.cop4020fa23.Kind.STRING_LIT;
+import static org.junit.jupiter.api.Assertions.fail;
 
-
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.List;
 import edu.ufl.cise.cop4020fa23.SymbolTable;
-import edu.ufl.cise.cop4020fa23.Kind;
+import edu.ufl.cise.cop4020fa23.Kind.*;
 import edu.ufl.cise.cop4020fa23.exceptions.TypeCheckException;
 import edu.ufl.cise.cop4020fa23.exceptions.LexicalException;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
@@ -27,7 +28,27 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitBinaryExpr(BinaryExpr binaryExpr, Object arg) throws PLCCompilerException {
-        
+        Type leftType = (Type)binaryExpr.getLeftExpr().visit(this, arg);
+        Type rightType = (Type)binaryExpr.getRightExpr().visit(this, arg);
+        Kind op = binaryExpr.getOpKind();
+        if (leftType == Type.PIXEL && (op == Kind.BITAND || op == Kind.BITOR) && rightType == Type.PIXEL) {
+            binaryExpr.setType(Type.PIXEL);
+        }
+        else if (leftType == Type.BOOLEAN && (op == Kind.AND || op == Kind.OR) && rightType == Type.BOOLEAN) {
+            binaryExpr.setType(Type.BOOLEAN);
+        }
+        else if (leftType == Type.INT && (op == Kind.GT || op == Kind.LT || op == Kind.LE || op == Kind.GE) && rightType == Type.INT) {
+            binaryExpr.setType(Type.BOOLEAN);
+        }
+        else if (leftType == rightType && op == Kind.EQ) {
+            binaryExpr.setType(Type.BOOLEAN);
+        }
+        else if (leftType == Type.INT && op == Kind.EXP && rightType == Type.INT) {
+            binaryExpr.setType(Type.INT);
+        }
+        else if (leftType == Type.PIXEL && op == Kind.EXP && rightType == Type.INT) {
+            binaryExpr.setType(Type.PIXEL);
+        }
         throw new UnsupportedOperationException("Unimplemented method 'visitBinaryExpr'");
     }
 
@@ -39,7 +60,7 @@ public class TypeCheckVisitor implements ASTVisitor{
             elem.visit(this, arg);
         }
         ST.leaveScope();
-        return null;
+        return block;
     }
 
     @Override
@@ -56,24 +77,37 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitConditionalExpr(ConditionalExpr conditionalExpr, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitConditionalExpr'");
+        Type guard = (Type)conditionalExpr.getGuardExpr().visit(this, arg);
+        Type trueE = (Type)conditionalExpr.getTrueExpr().visit(this, arg);
+        Type falseE = (Type)conditionalExpr.getFalseExpr().visit(this, arg);
+        if(guard == Type.BOOLEAN && trueE == falseE) {
+            conditionalExpr.setType(trueE);
+            return conditionalExpr.getType();
+        }
+        throw new TypeCheckException("Conditional for conditional Expr not met");
     }
 
     @Override
     public Object visitDeclaration(Declaration declaration, Object arg) throws PLCCompilerException {
-        Type nameType = (Type)declaration.visit(this, arg);
-        Type exprType = (Type)declaration.visit(this, arg);
-        if (declaration.getInitializer() == null || nameType == exprType || (exprType == Type.STRING && nameType == Type.IMAGE)) {
-            
+        if (declaration.getInitializer() == null) {
+            return (Type)declaration.getNameDef().visit(this, arg);
+        }
+        Type exprType = (Type)declaration.getInitializer().visit(this, arg);
+        Type nameType = (Type)declaration.getNameDef().visit(this, arg);
+        if (exprType == nameType || (exprType == Type.STRING && nameType == Type.IMAGE)) {
+            return nameType;
         }
         throw new TypeCheckException("Didn't meet condition for declaration type");
     }
 
     @Override
     public Object visitDimension(Dimension dimension, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitDimension'");
+        Type width = (Type)dimension.getWidth().visit(this, arg);
+        Type length = (Type)dimension.getHeight().visit(this, arg);
+        if (width == Type.INT && length == Type.INT) {
+            return dimension;
+        }
+        throw new TypeCheckException("Not int dimension");
     }
 
     @Override
@@ -117,31 +151,33 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitNameDef(NameDef nameDef, Object arg) throws PLCCompilerException {
-        Type type = Type.kind2type(nameDef.getTypeToken().kind());
+        Type type = nameDef.getType();
         //Checks if the dimension is empty, if it is then check if the types are one of the allowed one
-        if (nameDef.getDimension() == null) { //if th type isn't one of the allowed one then throw error
+        if (nameDef.getDimension() == null) { //if the type isn't one of the allowed one then throw error
             if (type != Type.INT && type != Type.BOOLEAN && type != Type.STRING && type != Type.PIXEL && type != Type.IMAGE) {
                 throw new TypeCheckException("Type not allowed for a empty dimension");
             }
         }
         else { //If a nonempty dimension is not image type then throw image
+            nameDef.getDimension().visit(this, arg);
             if (type != Type.IMAGE) {
                 throw new TypeCheckException("Type not allowed for a nonempty dimension");
             }
         }
         //This runs only if the 1 of 2 cases pass: dim is empty and types are good or dim is not empty and type is image
         if(ST.lookup(nameDef.getName()) == null) {
-                ST.add(nameDef.getName(), nameDef);
-                return type;
+            ST.add(nameDef.getName(), nameDef);
+            return type;
         }
         else {
-            throw new TypeCheckException("Alreay in symbol table");
+            throw new TypeCheckException("Already in symbol table");
         }
     }
 
     @Override
     public Object visitNumLitExpr(NumLitExpr numLitExpr, Object arg) throws PLCCompilerException {
         numLitExpr.setType(Type.INT);
+        System.out.println("running");
         return Type.INT;
     }
 
