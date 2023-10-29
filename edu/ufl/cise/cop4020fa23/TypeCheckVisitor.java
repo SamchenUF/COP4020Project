@@ -33,23 +33,41 @@ public class TypeCheckVisitor implements ASTVisitor{
         Kind op = binaryExpr.getOpKind();
         if (leftType == Type.PIXEL && (op == Kind.BITAND || op == Kind.BITOR) && rightType == Type.PIXEL) {
             binaryExpr.setType(Type.PIXEL);
+            return Type.PIXEL;
         }
         else if (leftType == Type.BOOLEAN && (op == Kind.AND || op == Kind.OR) && rightType == Type.BOOLEAN) {
             binaryExpr.setType(Type.BOOLEAN);
+            return Type.BOOLEAN;
         }
         else if (leftType == Type.INT && (op == Kind.GT || op == Kind.LT || op == Kind.LE || op == Kind.GE) && rightType == Type.INT) {
             binaryExpr.setType(Type.BOOLEAN);
+            return Type.BOOLEAN;
         }
         else if (leftType == rightType && op == Kind.EQ) {
             binaryExpr.setType(Type.BOOLEAN);
+            return Type.BOOLEAN;
         }
         else if (leftType == Type.INT && op == Kind.EXP && rightType == Type.INT) {
             binaryExpr.setType(Type.INT);
+            return Type.INT;
         }
         else if (leftType == Type.PIXEL && op == Kind.EXP && rightType == Type.INT) {
             binaryExpr.setType(Type.PIXEL);
+            return Type.PIXEL;
         }
-        throw new UnsupportedOperationException("Unimplemented method 'visitBinaryExpr'");
+        else if (leftType == rightType && op == Kind.PLUS) {
+            binaryExpr.setType(leftType);
+            return leftType;
+        }
+        else if ((leftType == Type.IMAGE || leftType == Type.PIXEL || leftType == Type.INT) && (op == Kind.MINUS || op == Kind.TIMES || op == Kind.DIV || op == Kind.MOD) && rightType == leftType) {
+            binaryExpr.setType(leftType);
+            return leftType;
+        }
+        else if ((leftType == Type.PIXEL || leftType == Type.IMAGE) && (op == Kind.TIMES || op == Kind.DIV || op == Kind.MOD) && rightType == Type.INT) {
+            binaryExpr.setType(leftType);
+            return leftType;
+        }
+        throw new TypeCheckException("Not valid binary type combo");
     }
 
     @Override
