@@ -21,9 +21,9 @@ public class TypeCheckVisitor implements ASTVisitor{
         }
     @Override
     public Object visitAssignmentStatement(AssignmentStatement assignmentStatement, Object arg) throws PLCCompilerException {
-        LValue lValue = assignmentStatement.getLvalue();
+        LValue lValue = assignmentStatement.getlValue();
         Type lValueType = (Type) lValue.visit(this, arg);
-        Type exprType = (Type) assignmentStatement.getExpr().visit(this, arg);
+        Type exprType = (Type) assignmentStatement.getE().visit(this, arg);
         if(lValueType == exprType) {
             return lValueType;
         }
@@ -87,10 +87,13 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitBlockStatement(StatementBlock statementBlock, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitBlockStatement'");
+        for(BlockElem elem : statementBlock.getBlock().getElems()) {
+            elem.visit(this, arg);
+        }
+        return statementBlock;
     }
 
+    
     @Override
     public Object visitChannelSelector(ChannelSelector channelSelector, Object arg) throws PLCCompilerException {
         // TODO Auto-generated method stub
