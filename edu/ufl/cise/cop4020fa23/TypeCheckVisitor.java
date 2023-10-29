@@ -96,9 +96,13 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitChannelSelector(ChannelSelector channelSelector, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitChannelSelector'");
+        return Type.PIXEL;
+        // idk if we should be returning "Type.PIXEL", because this is assuming that a color channel is part of a pixel
+        // in the future if we add more specific types for color channels (like RED, GREEN, BLUE, or ALPHA),
+        // then we might need a more detailed method
+        // what do you think?
     }
+
 
     @Override
     public Object visitConditionalExpr(ConditionalExpr conditionalExpr, Object arg) throws PLCCompilerException {
@@ -150,8 +154,7 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitExpandedPixelExpr(ExpandedPixelExpr expandedPixelExpr, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitExpandedPixelExpr'");
+        return Type.PIXEL; // assuming an expanded pixel always returns a pixel type
     }
 
     @Override
