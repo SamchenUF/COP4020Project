@@ -237,7 +237,6 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitStringLitExpr(StringLitExpr stringLitExpr, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
         stringLitExpr.setType(Type.STRING);
         return Type.STRING;
         //throw new UnsupportedOperationException("Unimplemented method 'visitStringLitExpr'");
@@ -257,8 +256,8 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitBooleanLitExpr(BooleanLitExpr booleanLitExpr, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitBooleanLitExpr'");
+        booleanLitExpr.setType(Type.BOOLEAN);
+        return Type.BOOLEAN;
     }
 
     @Override
