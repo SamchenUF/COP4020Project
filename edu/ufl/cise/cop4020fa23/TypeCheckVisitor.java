@@ -175,9 +175,16 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitIfStatement(IfStatement ifStatement, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitIfStatement'");
+        for(GuardedBlock guardedBlock : ifStatement.getGuardedBlocks()) {
+            Type guardType = (Type)guardedBlock.getGuard().visit(this, arg);
+            if(guardType != Type.BOOLEAN) {
+                throw new TypeCheckException("Guard in If statement must be of type BOOLEAN");
+            }
+            guardedBlock.getBlock().visit(this, arg);
+        }
+        return null;
     }
+
 
     @Override
     public Object visitLValue(LValue lValue, Object arg) throws PLCCompilerException {
