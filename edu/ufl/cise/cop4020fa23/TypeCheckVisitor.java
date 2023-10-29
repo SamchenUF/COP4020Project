@@ -21,9 +21,13 @@ public class TypeCheckVisitor implements ASTVisitor{
         }
     @Override
     public Object visitAssignmentStatement(AssignmentStatement assignmentStatement, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-
-        throw new UnsupportedOperationException("Unimplemented method 'visitAssignmentStatement'");
+        LValue lValue = assignmentStatement.getLvalue();
+        Type lValueType = (Type) lValue.visit(this, arg);
+        Type exprType = (Type) assignmentStatement.getExpr().visit(this, arg);
+        if(lValueType == exprType) {
+            return lValueType;
+        }
+        throw new TypeCheckException("Type mismatch in assignment");
     }
 
     @Override
