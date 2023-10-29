@@ -243,7 +243,6 @@ public class TypeCheckVisitor implements ASTVisitor{
     public Object visitStringLitExpr(StringLitExpr stringLitExpr, Object arg) throws PLCCompilerException {
         stringLitExpr.setType(Type.STRING);
         return Type.STRING;
-        //throw new UnsupportedOperationException("Unimplemented method 'visitStringLitExpr'");
     }
 
     @Override
@@ -266,7 +265,11 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitConstExpr(ConstExpr constExpr, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitConstExpr'");
+        if (constExpr.getName().equals("Z")) {
+            constExpr.setType(Type.INT);
+            return Type.INT;
+        }
+        constExpr.setType(Type.PIXEL);
+        return Type.PIXEL;
     }
 }
