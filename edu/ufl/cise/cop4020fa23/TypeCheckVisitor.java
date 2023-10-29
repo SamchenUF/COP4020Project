@@ -87,9 +87,12 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitBlockStatement(StatementBlock statementBlock, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitBlockStatement'");
+        for(BlockElem elem : statementBlock.getBlock().getElems()) {
+            elem.visit(this, arg);
+        }
+        return statementBlock;
     }
+
 
     @Override
     public Object visitChannelSelector(ChannelSelector channelSelector, Object arg) throws PLCCompilerException {
