@@ -100,10 +100,6 @@ public class TypeCheckVisitor implements ASTVisitor{
     @Override
     public Object visitChannelSelector(ChannelSelector channelSelector, Object arg) throws PLCCompilerException {
         return Type.kind2type(channelSelector.color());
-        // idk if we should be returning "Type.PIXEL", because this is assuming that a color channel is part of a pixel
-        // in the future if we add more specific types for color channels (like RED, GREEN, BLUE, or ALPHA),
-        // then we might need a more detailed method
-        // what do you think?
     }
 
 
