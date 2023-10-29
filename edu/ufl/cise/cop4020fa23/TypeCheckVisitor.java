@@ -23,8 +23,10 @@ public class TypeCheckVisitor implements ASTVisitor{
     public Object visitAssignmentStatement(AssignmentStatement assignmentStatement, Object arg) throws PLCCompilerException {
         LValue lValue = assignmentStatement.getlValue();
         Type lValueType = (Type) lValue.visit(this, arg);
+        // visit the expression on the right hand side (RValue) to determine its type
         Type exprType = (Type) assignmentStatement.getE().visit(this, arg);
         if(lValueType == exprType) {
+            // if the types of LValue and the RValue are the same type, return the type
             return lValueType;
         }
         throw new TypeCheckException("Type mismatch in assignment");
@@ -87,7 +89,8 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitBlockStatement(StatementBlock statementBlock, Object arg) throws PLCCompilerException {
-        for(BlockElem elem : statementBlock.getBlock().getElems()) {
+            // iterate over each element within the statement block
+            for(BlockElem elem : statementBlock.getBlock().getElems()) {
             elem.visit(this, arg);
         }
         return statementBlock;
@@ -141,11 +144,14 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitDoStatement(DoStatement doStatement, Object arg) throws PLCCompilerException {
+        // iterate over each guarded block within the DoStatement
         for(GuardedBlock guardedBlock : doStatement.getGuardedBlocks()) {
+            // get the type of the guard condition
             Type guardType = (Type)guardedBlock.getGuard().visit(this, arg);
             if(guardType != Type.BOOLEAN) {
                 throw new TypeCheckException("Do statement guard must be of type BOOLEAN");
             }
+            // visit and process the statement block associated with the guard
             guardedBlock.getBlock().visit(this, arg);
         }
         return null;
@@ -178,11 +184,14 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitIfStatement(IfStatement ifStatement, Object arg) throws PLCCompilerException {
+        // iterate over each guarded block within the IfStatement
         for(GuardedBlock guardedBlock : ifStatement.getGuardedBlocks()) {
+            // get the type of the guard condition
             Type guardType = (Type)guardedBlock.getGuard().visit(this, arg);
             if(guardType != Type.BOOLEAN) {
                 throw new TypeCheckException("Guard in If statement must be of type BOOLEAN");
             }
+            // visit and process the statement block associated with the guard
             guardedBlock.getBlock().visit(this, arg);
         }
         return null;
@@ -191,8 +200,11 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitLValue(LValue lValue, Object arg) throws PLCCompilerException {
+        // look up the LValue's name in the symbol table to get its definition
         NameDef def = ST.lookup(lValue.getName());
+        // if the definition is found in the symbol table
         if (def != null) {
+            // set the LValue's type based on the definition's type that was found
             lValue.setType(def.getType());
             return def.getType();
         }
@@ -230,21 +242,28 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitPixelSelector(PixelSelector pixelSelector, Object arg) throws PLCCompilerException {
+        // visit the expression representing the x-coordinate of the pixel
         pixelSelector.xExpr().visit(this, arg);
+        // visit the expression representing the y-coordinate of the pixel
         pixelSelector.yExpr().visit(this, arg);
+        // after processing the x and y expressions, return the PIXEL type
         return Type.PIXEL;
     }
 
 
     @Override
     public Object visitPostfixExpr(PostfixExpr postfixExpr, Object arg) throws PLCCompilerException {
+        // get the type of the primary expression
         Type exprType = (Type)postfixExpr.primary().visit(this, arg);
+        // ff there's a pixel selection post-fix operator, visit it
         if (postfixExpr.pixel() != null) {
             postfixExpr.pixel().visit(this, arg);
         }
+        // if there's a channel selection post-fix operator, visit it
         if (postfixExpr.channel() != null) {
             postfixExpr.channel().visit(this, arg);
         }
+        // set the type of the postfix expression to the primary expression's type
         postfixExpr.setType(exprType);
         return exprType;
     }
@@ -252,7 +271,7 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitProgram(Program program, Object arg) throws PLCCompilerException {
-        //Base code that just returns the type does not do anyy type checking
+        //Base code that just returns the type does not do any type checking
         Type type = Type.kind2type(program.getTypeToken().kind());
         program.setType(type);
         if (type == null) {
@@ -281,9 +300,12 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitUnaryExpr(UnaryExpr unaryExpr, Object arg) throws PLCCompilerException {
+        // visit the expression within the unary expression and get its type
         Type exprType = (Type)unaryExpr.getExpr().visit(this, arg);
+        // get the unary operator from the unary expression
         Kind op = unaryExpr.getOp();
         if (op == Kind.MINUS || op == Kind.BANG) {
+            // set the type of the unary expression
             unaryExpr.setType(exprType);
             return exprType;
         }
@@ -305,11 +327,15 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitConstExpr(ConstExpr constExpr, Object arg) throws PLCCompilerException {
+        // check if the name of the constant expression is "Z"
         if (constExpr.getName().equals("Z")) {
+            // set the type of the constant expression to INT
             constExpr.setType(Type.INT);
             return Type.INT;
         }
+        // if the name is not "Z", set the type of the constant expression to PIXEL
         constExpr.setType(Type.PIXEL);
         return Type.PIXEL;
     }
 }
+
