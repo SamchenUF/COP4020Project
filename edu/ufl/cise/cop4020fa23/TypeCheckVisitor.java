@@ -105,8 +105,6 @@ public class TypeCheckVisitor implements ASTVisitor{
         if (channelSelector.color() == RES_blue || channelSelector.color() == RES_green || channelSelector.color() == Kind.RES_red) {
             return channelSelector;
         }
-        
-        //channelSelector.visit(this, arg);
         throw new TypeCheckException("Not valid type for channel");
     }
 
