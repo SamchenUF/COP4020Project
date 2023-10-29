@@ -235,9 +235,17 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitPostfixExpr(PostfixExpr postfixExpr, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitPostfixExpr'");
+        Type exprType = (Type)postfixExpr.primary().visit(this, arg);
+        if (postfixExpr.pixel() != null) {
+            postfixExpr.pixel().visit(this, arg);
+        }
+        if (postfixExpr.channel() != null) {
+            postfixExpr.channel().visit(this, arg);
+        }
+        postfixExpr.setType(exprType);
+        return exprType;
     }
+
 
     @Override
     public Object visitProgram(Program program, Object arg) throws PLCCompilerException {
