@@ -278,9 +278,15 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitUnaryExpr(UnaryExpr unaryExpr, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitUnaryExpr'");
+        Type exprType = (Type)unaryExpr.getExpr().visit(this, arg);
+        Kind op = unaryExpr.getOp();
+        if (op == Kind.MINUS || op == Kind.BANG) {
+            unaryExpr.setType(exprType);
+            return exprType;
+        }
+        throw new TypeCheckException("Invalid unary operation");
     }
+
 
     @Override
     public Object visitWriteStatement(WriteStatement writeStatement, Object arg) throws PLCCompilerException {
