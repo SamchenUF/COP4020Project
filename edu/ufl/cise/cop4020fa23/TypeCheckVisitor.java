@@ -137,9 +137,16 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitDoStatement(DoStatement doStatement, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitDoStatement'");
+        for(GuardedBlock guardedBlock : doStatement.getGuardedBlocks()) {
+            Type guardType = (Type)guardedBlock.getGuard().visit(this, arg);
+            if(guardType != Type.BOOLEAN) {
+                throw new TypeCheckException("Do statement guard must be of type BOOLEAN");
+            }
+            guardedBlock.getBlock().visit(this, arg);
+        }
+        return null;
     }
+
 
     @Override
     public Object visitExpandedPixelExpr(ExpandedPixelExpr expandedPixelExpr, Object arg) throws PLCCompilerException {
