@@ -264,15 +264,20 @@ public class TypeCheckVisitor implements ASTVisitor{
     public Object visitPostfixExpr(PostfixExpr postfixExpr, Object arg) throws PLCCompilerException {
         // get the type of the primary expression
         Type exprType = (Type)postfixExpr.primary().visit(this, arg);
-        // ff there's a pixel selection post-fix operator, visit it
+
+        // if there's a pixel selection post-fix operator, visit it
         if (postfixExpr.pixel() != null) {
             postfixExpr.pixel().visit(this, arg);
         }
+
         // if there's a channel selection post-fix operator, visit it
+        // and modify the type to INT
         if (postfixExpr.channel() != null) {
             postfixExpr.channel().visit(this, arg);
+            exprType = Type.INT; // change the type to INT as accessing a channel yields an integer value
         }
-        // set the type of the postfix expression to the primary expression's type
+
+        // set the type of the postfix expression
         postfixExpr.setType(exprType);
         return exprType;
     }
