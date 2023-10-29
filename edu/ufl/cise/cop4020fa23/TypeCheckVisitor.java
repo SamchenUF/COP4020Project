@@ -3,7 +3,10 @@ package edu.ufl.cise.cop4020fa23;
 import edu.ufl.cise.cop4020fa23.ast.*;
 import edu.ufl.cise.cop4020fa23.ast.Block.BlockElem;
 
+import static edu.ufl.cise.cop4020fa23.Kind.RES_blue;
+import static edu.ufl.cise.cop4020fa23.Kind.RES_green;
 import static edu.ufl.cise.cop4020fa23.Kind.STRING_LIT;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.nio.file.attribute.PosixFilePermission;
@@ -96,11 +99,12 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitChannelSelector(ChannelSelector channelSelector, Object arg) throws PLCCompilerException {
-        return Type.kind2type(channelSelector.color());
-        // idk if we should be returning "Type.PIXEL", because this is assuming that a color channel is part of a pixel
-        // in the future if we add more specific types for color channels (like RED, GREEN, BLUE, or ALPHA),
-        // then we might need a more detailed method
-        // what do you think?
+        if (channelSelector.color() == RES_blue || channelSelector.color() == RES_green || channelSelector.color() == Kind.RES_red) {
+            return channelSelector;
+        }
+        
+        //channelSelector.visit(this, arg);
+        throw new TypeCheckException("Not valid type for channel");
     }
 
 
@@ -123,6 +127,8 @@ public class TypeCheckVisitor implements ASTVisitor{
         }
         Type exprType = (Type)declaration.getInitializer().visit(this, arg);
         Type nameType = (Type)declaration.getNameDef().visit(this, arg);
+        System.out.println(exprType);
+        System.out.println(nameType);
         if (exprType == nameType || (exprType == Type.STRING && nameType == Type.IMAGE)) {
             return nameType;
         }
@@ -222,7 +228,7 @@ public class TypeCheckVisitor implements ASTVisitor{
             }
         }
         //This runs only if the 1 of 2 cases pass: dim is empty and types are good or dim is not empty and type is image
-        ST.add(nameDef.getName(), ST.lookup(nameDef.getName()));
+        ST.add(nameDef.getName(), nameDef);
         return type;
         
     }
@@ -230,7 +236,6 @@ public class TypeCheckVisitor implements ASTVisitor{
     @Override
     public Object visitNumLitExpr(NumLitExpr numLitExpr, Object arg) throws PLCCompilerException {
         numLitExpr.setType(Type.INT);
-        System.out.println("running");
         return Type.INT;
     }
 
