@@ -216,12 +216,38 @@ public class TypeCheckVisitor implements ASTVisitor{
     @Override
     public Object visitLValue(LValue lValue, Object arg) throws PLCCompilerException {
         // if there's a pixel selector, the LValue refers to a pixel of the image
+        lValue.setNameDef(ST.lookup(lValue.getName()));
+        Type varType = (Type) lValue.getNameDef().visit(this, arg);
         if (lValue.getPixelSelector() != null) {
+            varType = Type.IMAGE;
+        }
+         if (lValue.getPixelSelector() == null && lValue.getChannelSelector() == null) {
+            lValue.setType(varType);
+            return varType;
+        }
+        if (lValue.getPixelSelector() != null && lValue.getChannelSelector() == null) {
+            lValue.setType(Type.PIXEL);
+            lValue.getPixelSelector().visit(this, arg);
             return Type.PIXEL;
         }
-
+        if (lValue.getPixelSelector() != null && lValue.getChannelSelector() != null) {
+            lValue.getChannelSelector().visit(this, arg);
+            lValue.setType(Type.INT);
+            return Type.INT;
+        }
+        if (varType == Type.IMAGE && lValue.getPixelSelector() == null && lValue.getChannelSelector() != null) {
+            lValue.getChannelSelector().visit(this, arg);
+            lValue.setType(Type.IMAGE);
+            return Type.IMAGE;
+        }
+        if (varType == Type.PIXEL && lValue.getPixelSelector() == null && lValue.getChannelSelector() != null) {
+            lValue.setType(Type.INT);
+            lValue.getChannelSelector().visit(this, arg);
+            return Type.INT;
+        }
+        throw new TypeCheckException("LValue not found in symbol table");
         // look up the LValue's name in the symbol table to get its definition
-        NameDef def = ST.lookup(lValue.getName());
+        /*NameDef def = ST.lookup(lValue.getName());
 
         // if the definition is found in the symbol table
         if (def != null) {
@@ -230,7 +256,7 @@ public class TypeCheckVisitor implements ASTVisitor{
             return def.getType();
         }
 
-        throw new TypeCheckException("LValue not found in symbol table");
+        throw new TypeCheckException("LValue not found in symbol table");*/
     }
 
 
@@ -275,7 +301,7 @@ public class TypeCheckVisitor implements ASTVisitor{
         }
 
         // after processing the x and y expressions, return the PIXEL type
-        return Type.PIXEL;
+        return Type.INT;
         
         
     }
@@ -370,6 +396,10 @@ public class TypeCheckVisitor implements ASTVisitor{
             // set the type of the unary expression
             unaryExpr.setType(exprType);
             return exprType;
+        }
+        if (op == Kind.RES_width || op == Kind.RES_height || exprType == Type.IMAGE) {
+            unaryExpr.setType(Type.INT);
+            return Type.INT;
         }
         throw new TypeCheckException("Invalid unary operation");
     }
