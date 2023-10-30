@@ -219,6 +219,7 @@ public class TypeCheckVisitor implements ASTVisitor{
         lValue.setNameDef(ST.lookup(lValue.getName()));
         Type varType = (Type) lValue.getNameDef().visit(this, arg);
         if (lValue.getPixelSelector() != null) {
+            lValue.getPixelSelector().visit(this, lValue);
             varType = Type.IMAGE;
         }
          if (lValue.getPixelSelector() == null && lValue.getChannelSelector() == null) {
@@ -227,7 +228,6 @@ public class TypeCheckVisitor implements ASTVisitor{
         }
         if (lValue.getPixelSelector() != null && lValue.getChannelSelector() == null) {
             lValue.setType(Type.PIXEL);
-            lValue.getPixelSelector().visit(this, arg);
             return Type.PIXEL;
         }
         if (lValue.getPixelSelector() != null && lValue.getChannelSelector() != null) {
@@ -290,18 +290,31 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitPixelSelector(PixelSelector pixelSelector, Object arg) throws PLCCompilerException {
-        // visit the expression representing the x-coordinate of the pixel
-        Type xType = (Type) pixelSelector.xExpr().visit(this, arg);
-        // visit the expression representing the y-coordinate of the pixel
-        Type yType = (Type) pixelSelector.yExpr().visit(this, arg);
+        if (arg != null) {
+            // visit the expression representing the x-coordinate of the pixel
+            Type xType = (Type) pixelSelector.xExpr().visit(this, arg);
+            // visit the expression representing the y-coordinate of the pixel
+            Type yType = (Type) pixelSelector.yExpr().visit(this, arg);
+            if ((xType == Type.INT || xType.getClass() != null) &&(yType == Type.INT || yType.getClass() != null)) {
+                if (xType.getClass() != null && ST.lookup(xType.name()) == null) {
+                    ST.add(xType.name(), new SyntheticNameDef(xType.name()));
+                }
+                if (yType.getClass() != null && ST.lookup(xType.name()) == null) {
+                    ST.add(yType.name(), new SyntheticNameDef(yType.name()));
+                }
+                return pixelSelector;
+            }
+            throw new TypeCheckException("Synthetic issue");
 
-        // ensure both x and y are of type INT
-        if (xType != Type.INT || yType != Type.INT) {
-            throw new TypeCheckException("Pixel selector coordinates should be of type INT");
         }
-
+        // ensure both x and y are of type INT
         // after processing the x and y expressions, return the PIXEL type
-        return Type.INT;
+        Type xType = (Type) pixelSelector.xExpr().visit(this, arg);
+        Type yType = (Type) pixelSelector.yExpr().visit(this, arg);
+        if (xType == Type.INT && yType == Type.INT) {
+            return Type.INT;
+        }
+        throw new TypeCheckException("Not both int");
         
         
     }
