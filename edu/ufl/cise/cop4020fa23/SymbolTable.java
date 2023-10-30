@@ -1,6 +1,9 @@
 package edu.ufl.cise.cop4020fa23;
 
 import edu.ufl.cise.cop4020fa23.ast.*;
+import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
+import edu.ufl.cise.cop4020fa23.exceptions.TypeCheckException;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
@@ -31,7 +34,10 @@ public class SymbolTable {
                 //System.out.println(currentScopeId);
             }
 
-            void add(String name, NameDef nameDef) {
+            void add(String name, NameDef nameDef) throws PLCCompilerException{
+                if (table.containsKey(name) && scopeStack.peek() == (table.get(name).scopeId)) {
+                    throw new TypeCheckException("Already exists in table");
+                }
                 table.put(name, new TableEntry(nameDef, scopeStack.peek(), table.get(name)));
             }
 
