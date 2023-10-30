@@ -3,16 +3,8 @@ package edu.ufl.cise.cop4020fa23;
 import edu.ufl.cise.cop4020fa23.ast.*;
 import edu.ufl.cise.cop4020fa23.ast.Block.BlockElem;
 
-import static edu.ufl.cise.cop4020fa23.Kind.RES_blue;
-import static edu.ufl.cise.cop4020fa23.Kind.RES_green;
-import static edu.ufl.cise.cop4020fa23.Kind.STRING_LIT;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.jupiter.api.Assertions.fail;
-
-import java.nio.file.attribute.PosixFilePermission;
 import java.util.List;
-import edu.ufl.cise.cop4020fa23.SymbolTable;
-import edu.ufl.cise.cop4020fa23.Kind.*;
+
 import edu.ufl.cise.cop4020fa23.exceptions.TypeCheckException;
 import edu.ufl.cise.cop4020fa23.exceptions.LexicalException;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
@@ -109,10 +101,7 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitChannelSelector(ChannelSelector channelSelector, Object arg) throws PLCCompilerException {
-        if (channelSelector.color() == RES_blue || channelSelector.color() == RES_green || channelSelector.color() == Kind.RES_red) {
-            return channelSelector;
-        }
-        throw new TypeCheckException("Not valid type for channel");
+        return null;
     }
 
 
@@ -189,9 +178,10 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitIdentExpr(IdentExpr identExpr, Object arg) throws PLCCompilerException {
+        System.out.println(identExpr.getName());
         if(ST.lookup(identExpr.getName()) != null) {
             identExpr.setNameDef(ST.lookup(identExpr.getName()));
-            identExpr.setType((Type)(identExpr.getNameDef().visit(this, arg)));
+            identExpr.setType(identExpr.getNameDef().getType());
             return identExpr.getType();
         }
         throw new TypeCheckException("Doesn't exist in symbolTable");
@@ -201,15 +191,10 @@ public class TypeCheckVisitor implements ASTVisitor{
     public Object visitIfStatement(IfStatement ifStatement, Object arg) throws PLCCompilerException {
         // iterate over each guarded block within the IfStatement
         for(GuardedBlock guardedBlock : ifStatement.getGuardedBlocks()) {
-            // get the type of the guard condition
-            Type guardType = (Type)guardedBlock.getGuard().visit(this, arg);
-            if(guardType != Type.BOOLEAN) {
-                throw new TypeCheckException("Guard in If statement must be of type BOOLEAN");
-            }
             // visit and process the statement block associated with the guard
             guardedBlock.getBlock().visit(this, arg);
         }
-        return null;
+        return ifStatement;
     }
 
 
@@ -219,7 +204,7 @@ public class TypeCheckVisitor implements ASTVisitor{
         lValue.setNameDef(ST.lookup(lValue.getName()));
         Type varType = (Type) lValue.getNameDef().visit(this, arg);
         if (lValue.getPixelSelector() != null) {
-            lValue.getPixelSelector().visit(this, lValue);
+            lValue.getPixelSelector().visit(this, true);
             varType = Type.IMAGE;
         }
          if (lValue.getPixelSelector() == null && lValue.getChannelSelector() == null) {
@@ -231,32 +216,18 @@ public class TypeCheckVisitor implements ASTVisitor{
             return Type.PIXEL;
         }
         if (lValue.getPixelSelector() != null && lValue.getChannelSelector() != null) {
-            lValue.getChannelSelector().visit(this, arg);
             lValue.setType(Type.INT);
             return Type.INT;
         }
         if (varType == Type.IMAGE && lValue.getPixelSelector() == null && lValue.getChannelSelector() != null) {
-            lValue.getChannelSelector().visit(this, arg);
             lValue.setType(Type.IMAGE);
             return Type.IMAGE;
         }
         if (varType == Type.PIXEL && lValue.getPixelSelector() == null && lValue.getChannelSelector() != null) {
             lValue.setType(Type.INT);
-            lValue.getChannelSelector().visit(this, arg);
             return Type.INT;
         }
         throw new TypeCheckException("LValue not found in symbol table");
-        // look up the LValue's name in the symbol table to get its definition
-        /*NameDef def = ST.lookup(lValue.getName());
-
-        // if the definition is found in the symbol table
-        if (def != null) {
-            // set the LValue's type based on the definition's type that was found
-            lValue.setType(def.getType());
-            return def.getType();
-        }
-
-        throw new TypeCheckException("LValue not found in symbol table");*/
     }
 
 
@@ -290,22 +261,23 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitPixelSelector(PixelSelector pixelSelector, Object arg) throws PLCCompilerException {
-        if (arg != null) {
-            // visit the expression representing the x-coordinate of the pixel
-            Type xType = (Type) pixelSelector.xExpr().visit(this, arg);
-            // visit the expression representing the y-coordinate of the pixel
-            Type yType = (Type) pixelSelector.yExpr().visit(this, arg);
-            if ((xType == Type.INT || xType.getClass() != null) &&(yType == Type.INT || yType.getClass() != null)) {
-                if (xType.getClass() != null && ST.lookup(xType.name()) == null) {
-                    ST.add(xType.name(), new SyntheticNameDef(xType.name()));
-                }
-                if (yType.getClass() != null && ST.lookup(xType.name()) == null) {
-                    ST.add(yType.name(), new SyntheticNameDef(yType.name()));
-                }
-                return pixelSelector;
-            }
-            throw new TypeCheckException("Synthetic issue");
+        if ((boolean)arg == true) {
+            boolean xTypeB = pixelSelector.xExpr() instanceof IdentExpr; 
+            boolean yTypeB = pixelSelector.yExpr() instanceof IdentExpr;
+            if ((xTypeB || pixelSelector.yExpr() instanceof NumLitExpr) && (yTypeB || pixelSelector.yExpr() instanceof NumLitExpr)) {
+                
+                IdentExpr temp = (IdentExpr) pixelSelector.xExpr();
+                IdentExpr temp2 = (IdentExpr) pixelSelector.yExpr();
+                if (xTypeB && ST.lookup(temp.getName()) == null) {
+                    System.out.println(temp.getName());
+                    ST.add(temp.getName(), new SyntheticNameDef(temp.getName()));
 
+                }
+                if (yTypeB && ST.lookup(temp.getName()) == null) {
+                    SyntheticNameDef ydef = new SyntheticNameDef(temp2.getName());
+                    ST.add(temp2.getName(), new SyntheticNameDef(temp2.getName()));
+                }
+            }
         }
         // ensure both x and y are of type INT
         // after processing the x and y expressions, return the PIXEL type
@@ -326,33 +298,19 @@ public class TypeCheckVisitor implements ASTVisitor{
         // get the type of the primary expression
         Type exprType = (Type)postfixExpr.primary().visit(this, arg);
 
-        /*// if there's a pixel selection post-fix operator, visit it
-        if (postfixExpr.pixel() != null) {
-            postfixExpr.pixel().visit(this, arg);
-        }
-
-        // if there's a channel selection post-fix operator, visit it
-        // and modify the type to INT
-        if (postfixExpr.channel() != null) {
-            postfixExpr.channel().visit(this, arg);
-            exprType = Type.INT; // change the type to INT as accessing a channel yields an integer value
-        }
-
-        // set the type of the postfix expression
-        postfixExpr.setType(exprType);
-        return exprType;*/
+        // if there's a pixel selection post-fix operator, visit it
         if (postfixExpr.pixel() == null && postfixExpr.channel() == null) {
             postfixExpr.setType(exprType);
             return exprType;
         }
         if (exprType == Type.IMAGE && postfixExpr.pixel() != null && postfixExpr.channel() == null) {
             postfixExpr.setType(Type.PIXEL);
-             postfixExpr.pixel().visit(this, arg);
+             postfixExpr.pixel().visit(this, false);
             return Type.PIXEL;
         }
         if (exprType == Type.IMAGE && postfixExpr.pixel() != null && postfixExpr.channel() != null) {
             postfixExpr.channel().visit(this, arg);
-            postfixExpr.pixel().visit(this, arg);
+            postfixExpr.pixel().visit(this, false);
             postfixExpr.setType(Type.INT);
             return Type.INT;
         }
