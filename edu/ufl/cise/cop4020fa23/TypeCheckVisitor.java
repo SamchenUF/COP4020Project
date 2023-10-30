@@ -178,8 +178,9 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitIdentExpr(IdentExpr identExpr, Object arg) throws PLCCompilerException {
-        System.out.println(identExpr.getName());
+        System.out.println(ST.lookup(identExpr.getName()) != null);
         if(ST.lookup(identExpr.getName()) != null) {
+            System.out.println("running");
             identExpr.setNameDef(ST.lookup(identExpr.getName()));
             identExpr.setType(identExpr.getNameDef().getType());
             return identExpr.getType();
@@ -273,8 +274,8 @@ public class TypeCheckVisitor implements ASTVisitor{
                     ST.add(temp.getName(), new SyntheticNameDef(temp.getName()));
 
                 }
-                if (yTypeB && ST.lookup(temp.getName()) == null) {
-                    SyntheticNameDef ydef = new SyntheticNameDef(temp2.getName());
+                if (yTypeB && ST.lookup(temp2.getName()) == null) {
+                    System.out.println(temp2.getName());
                     ST.add(temp2.getName(), new SyntheticNameDef(temp2.getName()));
                 }
             }
