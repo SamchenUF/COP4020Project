@@ -86,13 +86,13 @@ public class TypeCheckVisitor implements ASTVisitor{
             System.out.println(elem);
             elem.visit(this, arg);
         }
-        //System.out.println("ending");
         ST.leaveScope();
         return block;
     }
 
     @Override
     public Object visitBlockStatement(StatementBlock statementBlock, Object arg) throws PLCCompilerException {
+        //checks children
         statementBlock.getBlock().visit(this, arg);
         return statementBlock;
     }
@@ -142,14 +142,15 @@ public class TypeCheckVisitor implements ASTVisitor{
     @Override
     public Object visitDoStatement(DoStatement doStatement, Object arg) throws PLCCompilerException {
         // iterate over each guarded block within the DoStatement
-        for(GuardedBlock guardedBlock : doStatement.getGuardedBlocks()) {
+        List<GuardedBlock> guardList = doStatement.getGuardedBlocks();
+        for(GuardedBlock guardedBlock : guardList) {
             // get the type of the guard condition
             Type guardType = (Type)guardedBlock.getGuard().visit(this, arg);
             if(guardType != Type.BOOLEAN) {
                 throw new TypeCheckException("Do statement guard must be of type BOOLEAN");
             }
             // visit and process the statement block associated with the guard
-            guardedBlock.getBlock().visit(this, arg);
+            guardedBlock.visit(this, arg);
         }
         return null;
     }
@@ -169,8 +170,12 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitGuardedBlock(GuardedBlock guardedBlock, Object arg) throws PLCCompilerException {
+        //check if expr child has type bool
         if (guardedBlock.getGuard().getType() == Type.BOOLEAN) {
-            return Type.BOOLEAN;
+            //visit children
+            guardedBlock.getGuard().visit(this, arg);
+            guardedBlock.getBlock().visit(this, arg);
+            return guardedBlock;
         }
         throw new TypeCheckException("Guard type is not boolean");
     }
@@ -335,14 +340,18 @@ public class TypeCheckVisitor implements ASTVisitor{
         for (NameDef parameters : paramList) {
                 parameters.visit(this, arg);
             }   
-        program.getBlock().visit(this, arg);
+        program.getBlock().visit(this, type);
         ST.leaveScope();
         return type;
     }
 
     @Override
     public Object visitReturnStatement(ReturnStatement returnStatement, Object arg) throws PLCCompilerException {
-        return returnStatement.getE().visit(this, arg);
+        //check and see if children type is same as program type if not throw error
+        if ((Type)returnStatement.getE().visit(this, arg) == (Type)arg ) {
+            return returnStatement;
+        }
+        else throw new TypeCheckException("return type and prog type not same");
     }
 
     @Override
