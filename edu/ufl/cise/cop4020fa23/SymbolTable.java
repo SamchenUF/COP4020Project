@@ -28,6 +28,7 @@ public class SymbolTable {
 
             void leaveScope() {
                 scopeStack.pop();
+                //System.out.println(currentScopeId);
             }
 
             void add(String name, NameDef nameDef) {

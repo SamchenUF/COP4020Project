@@ -83,18 +83,17 @@ public class TypeCheckVisitor implements ASTVisitor{
         ST.enterScope();
         List<BlockElem> blockList = block.getElems();
         for (BlockElem elem : blockList) {
+            System.out.println(elem);
             elem.visit(this, arg);
         }
+        //System.out.println("ending");
         ST.leaveScope();
         return block;
     }
 
     @Override
     public Object visitBlockStatement(StatementBlock statementBlock, Object arg) throws PLCCompilerException {
-            // iterate over each element within the statement block
-            for(BlockElem elem : statementBlock.getBlock().getElems()) {
-            elem.visit(this, arg);
-        }
+        statementBlock.getBlock().visit(this, arg);
         return statementBlock;
     }
 
@@ -178,9 +177,7 @@ public class TypeCheckVisitor implements ASTVisitor{
 
     @Override
     public Object visitIdentExpr(IdentExpr identExpr, Object arg) throws PLCCompilerException {
-        System.out.println(ST.lookup(identExpr.getName()) != null);
         if(ST.lookup(identExpr.getName()) != null) {
-            System.out.println("running");
             identExpr.setNameDef(ST.lookup(identExpr.getName()));
             identExpr.setType(identExpr.getNameDef().getType());
             return identExpr.getType();
@@ -266,16 +263,12 @@ public class TypeCheckVisitor implements ASTVisitor{
             boolean xTypeB = pixelSelector.xExpr() instanceof IdentExpr; 
             boolean yTypeB = pixelSelector.yExpr() instanceof IdentExpr;
             if ((xTypeB || pixelSelector.yExpr() instanceof NumLitExpr) && (yTypeB || pixelSelector.yExpr() instanceof NumLitExpr)) {
-                
                 IdentExpr temp = (IdentExpr) pixelSelector.xExpr();
                 IdentExpr temp2 = (IdentExpr) pixelSelector.yExpr();
                 if (xTypeB && ST.lookup(temp.getName()) == null) {
-                    System.out.println(temp.getName());
                     ST.add(temp.getName(), new SyntheticNameDef(temp.getName()));
-
                 }
                 if (yTypeB && ST.lookup(temp2.getName()) == null) {
-                    System.out.println(temp2.getName());
                     ST.add(temp2.getName(), new SyntheticNameDef(temp2.getName()));
                 }
             }

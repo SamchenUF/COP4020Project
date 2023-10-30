@@ -98,7 +98,6 @@ public class Parser implements IParser {
 			BlockElem e0;
 			if (match(RES_image, RES_pixel, RES_string, RES_boolean, RES_int, RES_void)) {
 				e0 = declaration();
-				
 			} 
 			else {
 				e0 = statement();
