@@ -1101,5 +1101,4 @@ class TypeCheckTest_starter {
 			AST ast = getDecoratedAST(input);
 		});
 	}
-
 }
