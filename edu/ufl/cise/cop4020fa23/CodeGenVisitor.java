@@ -225,7 +225,7 @@ public class CodeGenVisitor implements ASTVisitor{
                 javaString.append("int");
                 break;
             case STRING:
-                javaString.append("string");
+                javaString.append("String");
                 break;
             case VOID:
                 javaString.append("void");
@@ -268,7 +268,10 @@ public class CodeGenVisitor implements ASTVisitor{
         javaString.append("public class ");
         javaString.append((program.getName()));
         javaString.append(" { public static ");
-        javaString.append(program.getTypeToken().text());
+        if (program.getTypeToken().text().equals("string")) {
+            javaString.append("String");
+        }
+        else javaString.append(program.getTypeToken().text());
         javaString.append(" apply(");
         List<NameDef> paramList = program.getParams();
         for (NameDef parameters : paramList) {
