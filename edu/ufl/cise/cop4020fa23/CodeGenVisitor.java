@@ -34,8 +34,12 @@ public class CodeGenVisitor implements ASTVisitor{
     @Override
     public String visitAssignmentStatement(AssignmentStatement assignmentStatement, Object arg)
             throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitAssignmentStatement'");
+        // Generate code for the left-hand side of the assignment
+        String lhsCode = (String) assignmentStatement.getlValue().visit(this, arg);
+        // Generate code for the right-hand side of the assignment
+        String rhsCode = (String) assignmentStatement.getE().visit(this, arg);
+        // Combine the two with an assignment operator
+        return lhsCode + " = " + rhsCode + ";\n";
     }
 
     @Override
