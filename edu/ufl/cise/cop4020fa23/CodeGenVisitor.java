@@ -81,9 +81,23 @@ public class CodeGenVisitor implements ASTVisitor{
     }
 
     @Override
-    public Object visitBlock(Block block, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitBlock'");
+    public String visitBlock(Block block, Object arg) throws PLCCompilerException {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{\n"); // Begin block
+
+        // Visit each block element and append its generated code to the StringBuilder
+        for (Block.BlockElem elem : block.getElems()) {
+            String elemCode = (String) elem.visit(this, arg);
+            sb.append(elemCode);
+
+            // If the code snippet does not already end with a newline, add one
+            if (!elemCode.endsWith("\n")) {
+                sb.append("\n");
+            }
+        }
+
+        sb.append("}\n"); // End block
+        return sb.toString();
     }
 
     @Override
