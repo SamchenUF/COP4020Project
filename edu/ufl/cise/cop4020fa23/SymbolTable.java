@@ -48,4 +48,7 @@ public class SymbolTable {
                 }
                 return entry != null ? entry.nameDef : null;
             }
+            int getScope() {
+                return currentScopeId;
+            }
         }

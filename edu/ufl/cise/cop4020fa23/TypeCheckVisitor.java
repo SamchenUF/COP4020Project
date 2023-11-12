@@ -3,6 +3,8 @@ package edu.ufl.cise.cop4020fa23;
 import edu.ufl.cise.cop4020fa23.ast.*;
 import edu.ufl.cise.cop4020fa23.ast.Block.BlockElem;
 
+import static org.hamcrest.CoreMatchers.containsString;
+
 import java.util.List;
 
 import edu.ufl.cise.cop4020fa23.exceptions.TypeCheckException;
@@ -26,17 +28,6 @@ public class TypeCheckVisitor implements ASTVisitor{
             return assignmentStatement;
         }
         throw new TypeCheckException("Type mismatch in assignment");
-        /*LValue lValue = assignmentStatement.getlValue();
-        Type lValueType = (Type) lValue.visit(this, arg);
-
-        // visit the expression on the right hand side (RValue) to determine its type
-        Type exprType = (Type) assignmentStatement.getE().visit(this, arg);
-
-        if(lValueType != null && lValueType == exprType) {
-            // if the types of LValue and the RValue are the same type, return the type
-            return lValueType;
-        }
-        throw new TypeCheckException("Type mismatch in assignment"); */
     }
 
 
@@ -264,7 +255,7 @@ public class TypeCheckVisitor implements ASTVisitor{
             }
         }
         //This runs only if the 1 of 2 cases pass: dim is empty and types are good or dim is not empty and type is image
-        
+        nameDef.setJavaName(nameDef.getName()+"$n" + Integer.toString(ST.getScope()));
         ST.add(nameDef.getName(), nameDef);
     
         return type;
