@@ -114,7 +114,7 @@ public class CodeGenVisitor implements ASTVisitor{
                 break;
         }
         javaString.append(" ");
-        javaString.append(binaryExpr.getLeftExpr().visit(this, arg));
+        javaString.append(binaryExpr.getRightExpr().visit(this, arg));
         javaString.append(")");
         return javaString;
     }
@@ -269,7 +269,7 @@ public class CodeGenVisitor implements ASTVisitor{
         javaString.append((program.getName()));
         javaString.append(" { public static ");
         javaString.append(program.getTypeToken().text());
-        javaString.append(" apply( ");
+        javaString.append(" apply(");
         List<NameDef> paramList = program.getParams();
         for (NameDef parameters : paramList) {
             javaString.append(parameters.visit(this, arg));
@@ -303,47 +303,11 @@ public class CodeGenVisitor implements ASTVisitor{
         StringBuilder javaString = new StringBuilder();
         javaString.append("(");
         switch (unaryExpr.getOp()) {
-            case BITAND:
-                javaString.append("&");
-                break;
-            case BITOR:
-                javaString.append("|");
-                break;
-            case AND:
-                javaString.append("&&");
-                break;
-            case OR:
-                javaString.append("||");
-                break;
-            case LT:
-                javaString.append("<");
-                break;
-            case GT:
-                javaString.append(">");
-                break;
-            case GE:
-                javaString.append(">=");
-                break;
-            case LE:
-                javaString.append("<=");
-                break;
-            case EQ: 
-                javaString.append("==");
-                break;
-            case PLUS:
-                javaString.append("+");
-                break;
             case MINUS:
                 javaString.append("-");
                 break;
-            case TIMES:
-                javaString.append("*");
-                break;
-            case DIV:
-                javaString.append("/");
-                break;
-            case MOD:
-                javaString.append("%");
+            case BANG:
+                javaString.append("!");
                 break;
             default:
                 break;
