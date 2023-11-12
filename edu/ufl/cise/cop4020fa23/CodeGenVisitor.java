@@ -44,8 +44,40 @@ public class CodeGenVisitor implements ASTVisitor{
 
     @Override
     public String visitBinaryExpr(BinaryExpr binaryExpr, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitBinaryExpr'");
+        // Retrieve the code for the left and right expressions by recursively visiting them
+        String leftCode = (String) binaryExpr.getLeftExpr().visit(this, arg);
+        String rightCode = (String) binaryExpr.getRightExpr().visit(this, arg);
+
+        // Get the operator token and convert it to the corresponding Java operator
+        String operator = getJavaOperator(binaryExpr.getOpKind());
+
+        // Combine the left expression, operator, and right expression into a single expression string
+        return "(" + leftCode + " " + operator + " " + rightCode + ")";
+    }
+
+
+    // This method convert our language's operator kind into Java's operator string
+    // For example, if we use a specific kind for logical AND, this converts it to '&&' for Java.
+    private String getJavaOperator(Kind opKind) {
+        switch (opKind) {
+            case BITAND: return "&";
+            case BITOR: return "|";
+            case AND: return "&&";
+            case OR: return "||";
+            case GT: return ">";
+            case LT: return "<";
+            case LE: return "<=";
+            case GE: return ">=";
+            case EQ: return "==";
+            case EXP: return "Math.pow"; // Java uses Math.pow(a, b) for exponentiation
+            case PLUS: return "+";
+            case MINUS: return "-";
+            case TIMES: return "*";
+            case DIV: return "/";
+            case MOD: return "%";
+            default:
+                throw new UnsupportedOperationException("Operator " + opKind + " not supported yet.");
+        }
     }
 
     @Override
