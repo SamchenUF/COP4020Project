@@ -321,10 +321,14 @@ public class CodeGenVisitor implements ASTVisitor{
     }
 
     @Override
-    public Object visitWriteStatement(WriteStatement writeStatement, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitWriteStatement'");
+    public String visitWriteStatement(WriteStatement writeStatement, Object arg) throws PLCCompilerException {
+        // Generate Java code for the expression to be written
+        String exprCode = (String) writeStatement.getExpr().visit(this, arg);
+
+        // Use ConsoleIO for output in the generated Java code
+        return "edu.ufl.cise.cop4020fa23.runtime.ConsoleIO.write(" + exprCode + ");\n";
     }
+
 
     @Override
     public Object visitBooleanLitExpr(BooleanLitExpr booleanLitExpr, Object arg) throws PLCCompilerException {
@@ -337,10 +341,15 @@ public class CodeGenVisitor implements ASTVisitor{
         return javaString;
     }
 
+
     @Override
-    public Object visitConstExpr(ConstExpr constExpr, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitConstExpr'");
+    public String visitConstExpr(ConstExpr constExpr, Object arg) throws PLCCompilerException {
+        // Retrieve the name of the constant
+        String constName = constExpr.getName();
+
+        // Assuming that we are direct mapping this name to a specific value or Java equivalent
+        return constName;
     }
+
     
 }
