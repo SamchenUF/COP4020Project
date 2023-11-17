@@ -65,7 +65,4 @@ public class WriteStatement extends Statement{
 	}
 
 
-	
-	
-
 }
