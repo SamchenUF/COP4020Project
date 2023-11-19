@@ -2,7 +2,9 @@ package edu.ufl.cise.cop4020fa23;
 
 import static org.hamcrest.CoreMatchers.containsString;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import edu.ufl.cise.cop4020fa23.ast.ASTVisitor;
 import edu.ufl.cise.cop4020fa23.ast.AssignmentStatement;
@@ -35,8 +37,6 @@ import edu.ufl.cise.cop4020fa23.ast.WriteStatement;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 
 public class CodeGenVisitor implements ASTVisitor{
-//I think its supposed to be like this, but i dont really know what a argument of package is
-//Every method should also return a string
     @Override
     public Object visitAssignmentStatement(AssignmentStatement assignmentStatement, Object arg) throws PLCCompilerException {
         StringBuilder javaString = new StringBuilder();
@@ -121,15 +121,27 @@ public class CodeGenVisitor implements ASTVisitor{
 
     @Override
     public Object visitBlock(Block block, Object arg) throws PLCCompilerException {
+        Boolean imported = false;
+        Map<Boolean, StringBuilder> hash = new HashMap<Boolean, StringBuilder>(); 
         StringBuilder javaString = new StringBuilder();
         javaString.append("{ ");
         List<BlockElem> blockList = block.getElems();
         for (BlockElem elem : blockList) {
+            if (elem instanceof WriteStatement) {
+                imported = true;
+            }
             javaString.append(elem.visit(this, arg));
             javaString.append("; ");
         }
         javaString.append("}");
-        return javaString;
+        
+        if (imported == false) {
+            return javaString;
+        }
+        else {
+            hash.put(true, javaString);
+            return hash;
+        }
     }
 
     @Override
@@ -281,7 +293,15 @@ public class CodeGenVisitor implements ASTVisitor{
             }
         }
         javaString.append(") ");
-        javaString.append(program.getBlock().visit(this, arg));
+        if (program.getBlock().visit(this, arg) instanceof Map) {
+            //dont have to worry about the safety as the only map that can be returned from visit is bool, SB
+            Map<Boolean, StringBuilder> hash = (Map)program.getBlock().visit(this, arg);
+            javaString.insert(34, "import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO; ");
+            javaString.append(hash.get(true));
+        }
+        else {
+            javaString.append(program.getBlock().visit(this, arg));
+        }
         javaString.append(" }");
         return javaString.toString();
     }
@@ -321,19 +341,20 @@ public class CodeGenVisitor implements ASTVisitor{
     }
 
     @Override
-    public String visitWriteStatement(WriteStatement writeStatement, Object arg) throws PLCCompilerException {
+    public Object visitWriteStatement(WriteStatement writeStatement, Object arg) throws PLCCompilerException {
         // Generate Java code for the expression to be written
-        String exprCode = (String) writeStatement.getExpr().visit(this, arg);
-
-        // Use ConsoleIO for output in the generated Java code
-        return "edu.ufl.cise.cop4020fa23.runtime.ConsoleIO.write(" + exprCode + ");\n";
+        StringBuilder javaString = new StringBuilder();
+        javaString.append("ConsoleIO.write(");
+        javaString.append(writeStatement.getExpr().visit(this, arg));
+        javaString.append(")");
+        return javaString;
     }
 
 
     @Override
     public Object visitBooleanLitExpr(BooleanLitExpr booleanLitExpr, Object arg) throws PLCCompilerException {
         StringBuilder javaString = new StringBuilder();
-        if (booleanLitExpr.getText()== "TRUE") {
+        if (booleanLitExpr.getText().equals("TRUE")) {
             javaString.append("true");
             return javaString;
         }
