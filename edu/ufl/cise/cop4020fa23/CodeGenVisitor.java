@@ -1,7 +1,12 @@
 package edu.ufl.cise.cop4020fa23;
 
+import static edu.ufl.cise.cop4020fa23.Kind.STRING_LIT;
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
+import static org.junit.jupiter.api.Assumptions.abort;
 
+import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +24,7 @@ import edu.ufl.cise.cop4020fa23.ast.Declaration;
 import edu.ufl.cise.cop4020fa23.ast.Dimension;
 import edu.ufl.cise.cop4020fa23.ast.DoStatement;
 import edu.ufl.cise.cop4020fa23.ast.ExpandedPixelExpr;
+import edu.ufl.cise.cop4020fa23.ast.Expr;
 import edu.ufl.cise.cop4020fa23.ast.GuardedBlock;
 import edu.ufl.cise.cop4020fa23.ast.IdentExpr;
 import edu.ufl.cise.cop4020fa23.ast.IfStatement;
@@ -34,7 +40,10 @@ import edu.ufl.cise.cop4020fa23.ast.StringLitExpr;
 import edu.ufl.cise.cop4020fa23.ast.Type;
 import edu.ufl.cise.cop4020fa23.ast.UnaryExpr;
 import edu.ufl.cise.cop4020fa23.ast.WriteStatement;
+import edu.ufl.cise.cop4020fa23.exceptions.CodeGenException;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
+import edu.ufl.cise.cop4020fa23.runtime.FileURLIO;
+import edu.ufl.cise.cop4020fa23.runtime.ImageOps;
 
 public class CodeGenVisitor implements ASTVisitor{
     @Override
@@ -152,8 +161,16 @@ public class CodeGenVisitor implements ASTVisitor{
 
     @Override
     public Object visitChannelSelector(ChannelSelector channelSelector, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitChannelSelector'");
+        if (arg.equals("PostFixExpr")) {
+            switch (channelSelector.color()) {
+                case RES_red: return "PixelOps.red";
+                case RES_blue: return "PixelOps.blue";
+                case RES_green: return "PixelOps.green";
+                default: break;
+            }
+        }
+        throw new CodeGenException("Unsuporrted");
+       
     }
 
     @Override
@@ -172,14 +189,49 @@ public class CodeGenVisitor implements ASTVisitor{
     @Override
     public Object visitDeclaration(Declaration declaration, Object arg) throws PLCCompilerException {
         StringBuilder javaString = new StringBuilder();
-        javaString.append(declaration.getNameDef().visit(this, arg));
-        if (declaration.getInitializer() == null) {
+        if (declaration.getNameDef().getType() != Type.IMAGE) {
+            javaString.append(declaration.getNameDef().visit(this, arg));
+            if (declaration.getInitializer() == null) {
+                return javaString;
+            }
+            javaString.append(" = ");
+            javaString.append(declaration.getInitializer().visit(this, arg));
             return javaString;
         }
-        javaString.append(" = ");
-        javaString.append(declaration.getInitializer().visit(this, arg));
-        return javaString;
-
+        else {
+            //NameDef type is image
+            javaString.append("final BufferedImage ");
+            javaString.append(declaration.getNameDef().getJavaName()); 
+            if (declaration.getInitializer() == null) { //case for when namedef is image but no expr
+                if (declaration.getNameDef().getDimension() == null) {
+                    throw new CodeGenException("No dimension in declaration");
+                }
+                javaString.append(" = ImageOps.makeImage(");
+                javaString.append(declaration.getNameDef().getDimension().visit(this, arg));
+                javaString.append(")");
+                return javaString;
+            }
+            if (declaration.getInitializer().getType() == Type.STRING) { //if there is expr and its a string
+                javaString.append(" = FileURLIO.readImage( ");
+                if (declaration.getNameDef().getDimension() != null) {
+                    javaString.append(declaration.getNameDef().getDimension().visit(this, arg));
+                }
+                javaString.append(" )");
+            }
+            else if (declaration.getInitializer().getType() == Type.IMAGE) {
+                if (declaration.getNameDef().getDimension() == null) {
+                    javaString.append(" = ImageOps.cloneImage(");
+                    javaString.append(declaration.getInitializer().visit(this, arg));
+                    javaString.append(")");
+                }
+                else {
+                    javaString.append(" = ImageOps.copyAndResize(");
+                    javaString.append(declaration.getInitializer().visit(this, arg));
+                    javaString.append(")");
+                }
+            }
+            return javaString;
+        }
     }
 
     @Override
@@ -230,8 +282,11 @@ public class CodeGenVisitor implements ASTVisitor{
     public Object visitNameDef(NameDef nameDef, Object arg) throws PLCCompilerException {
         StringBuilder javaString = new StringBuilder();
         switch (nameDef.getType()) {
-            case BOOLEAN:
-                javaString.append("boolean");
+            case IMAGE:
+                javaString.append("Bufferedimage");
+                break;
+            case PIXEL:
+                javaString.append("int");
                 break;
             case INT:
                 javaString.append("int");
@@ -241,6 +296,9 @@ public class CodeGenVisitor implements ASTVisitor{
                 break;
             case VOID:
                 javaString.append("void");
+                break;
+            case BOOLEAN:
+                javaString.append("boolean");
                 break;
         }
         javaString.append(" ");
@@ -257,14 +315,39 @@ public class CodeGenVisitor implements ASTVisitor{
 
     @Override
     public Object visitPixelSelector(PixelSelector pixelSelector, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitPixelSelector'");
+        StringBuilder javaString = new StringBuilder();
+        return javaString;
     }
 
     @Override
     public Object visitPostfixExpr(PostfixExpr postfixExpr, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitPostfixExpr'");
+        StringBuilder javaString = new StringBuilder();
+        if (postfixExpr.getType() == Type.PIXEL) {
+            javaString.append(postfixExpr.channel().visit(this, arg));
+            javaString.append("( ");
+            javaString.append(postfixExpr.primary().visit(this, arg));
+            javaString.append(" )");
+            return javaString;
+        }
+        if (postfixExpr.pixel() != null && postfixExpr.channel() == null) {
+            javaString.append("ImageOps.getRGB(");
+            javaString.append(postfixExpr.primary().visit(this, arg));
+            javaString.append(", ");
+            javaString.append(postfixExpr.pixel().visit(this, arg));
+            javaString.append(" )");
+        }
+        else if (postfixExpr.pixel() != null && postfixExpr.channel() != null) {
+            javaString.append(postfixExpr.channel().visit(this, "PostFixExpr"));
+            javaString.append(" (ImageOps.getRGB( ");
+            javaString.append(postfixExpr.primary().visit(this, arg));
+            javaString.append(", ");
+            javaString.append(postfixExpr.pixel().visit(this, arg));
+            javaString.append(" ))");
+        }
+        else if (postfixExpr.pixel() == null && postfixExpr.channel() != null) {
+            javaString.append("ImageOps.extractRed(");
+        }
+        return javaString;
     }
 
     @Override
@@ -332,6 +415,16 @@ public class CodeGenVisitor implements ASTVisitor{
             case BANG:
                 javaString.append("!");
                 break;
+            case RES_height:
+                javaString.append("(");
+                javaString.append(unaryExpr.getExpr().visit(this, arg));
+                javaString.append(".getHeight())");
+                return javaString;
+            case RES_width:
+                javaString.append("(");
+                javaString.append(unaryExpr.getExpr().visit(this, arg));
+                javaString.append(".getWidth())");
+                return javaString;
             default:
                 break;
         }
@@ -364,12 +457,53 @@ public class CodeGenVisitor implements ASTVisitor{
 
 
     @Override
-    public String visitConstExpr(ConstExpr constExpr, Object arg) throws PLCCompilerException {
-        // Retrieve the name of the constant
-        String constName = constExpr.getName();
-
-        // Assuming that we are direct mapping this name to a specific value or Java equivalent
-        return constName;
+    public Object visitConstExpr(ConstExpr constExpr, Object arg) throws PLCCompilerException {
+        StringBuilder javaString = new StringBuilder();
+        switch (constExpr.getName()) {
+            case "Z":
+                javaString.append("255");
+                break;
+            case "RED":
+                javaString.append("0x" + Integer.toHexString(java.awt.Color.RED.getRGB()));
+                break;
+            case "GREEN":
+                javaString.append("0x" + Integer.toHexString(java.awt.Color.GREEN.getRGB()));
+                break;
+            case "BLUE":
+                javaString.append("0x" + Integer.toHexString(java.awt.Color.BLUE.getRGB()));
+                break;
+            case "YELLOW":
+                javaString.append("0x" + Integer.toHexString(java.awt.Color.YELLOW.getRGB()));
+                break;
+            case "MAGENTA":
+                javaString.append("0x" + Integer.toHexString(java.awt.Color.MAGENTA.getRGB()));
+                break;
+            case "CYAN":
+                javaString.append("0x" + Integer.toHexString(java.awt.Color.CYAN.getRGB()));
+                break;
+            case "WHITE":
+                javaString.append("0x" + Integer.toHexString(java.awt.Color.WHITE.getRGB()));
+                break;
+            case "BLACK":
+                javaString.append("0x" + Integer.toHexString(java.awt.Color.BLACK.getRGB()));
+                break;
+            case "GRAY":
+                javaString.append("0x" + Integer.toHexString(java.awt.Color.GRAY.getRGB()));
+                break;
+            case "LIGHT_GRAY":
+                javaString.append("0x" + Integer.toHexString(java.awt.Color.LIGHT_GRAY.getRGB()));
+                break;
+            case "DARK_GRAY":
+                javaString.append("0x" + Integer.toHexString(java.awt.Color.DARK_GRAY.getRGB()));
+                break;
+            case "PINK":
+                javaString.append("0x" + Integer.toHexString(java.awt.Color.PINK.getRGB()));
+                break;
+            case "ORANGE":
+                javaString.append("0x" + Integer.toHexString(java.awt.Color.ORANGE.getRGB()));
+                break;
+        }
+        return javaString;
     }
 
     
