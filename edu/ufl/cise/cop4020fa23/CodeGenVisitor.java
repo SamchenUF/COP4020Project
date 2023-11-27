@@ -8,8 +8,10 @@ import static org.junit.jupiter.api.Assumptions.abort;
 
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import edu.ufl.cise.cop4020fa23.ast.ASTVisitor;
 import edu.ufl.cise.cop4020fa23.ast.AssignmentStatement;
@@ -163,9 +165,9 @@ public class CodeGenVisitor implements ASTVisitor{
     public Object visitChannelSelector(ChannelSelector channelSelector, Object arg) throws PLCCompilerException {
         if (arg.equals("PostFixExpr")) {
             switch (channelSelector.color()) {
-                case RES_red: return "PixelOps.red";
-                case RES_blue: return "PixelOps.blue";
-                case RES_green: return "PixelOps.green";
+                case RES_red: return "Red";
+                case RES_blue: return "Blue";
+                case RES_green: return "Green";
                 default: break;
             }
         }
@@ -189,6 +191,7 @@ public class CodeGenVisitor implements ASTVisitor{
     @Override
     public Object visitDeclaration(Declaration declaration, Object arg) throws PLCCompilerException {
         StringBuilder javaString = new StringBuilder();
+        Set<Object> stringSet = new HashSet<Object> ();
         if (declaration.getNameDef().getType() != Type.IMAGE) {
             javaString.append(declaration.getNameDef().visit(this, arg));
             if (declaration.getInitializer() == null) {
@@ -212,13 +215,13 @@ public class CodeGenVisitor implements ASTVisitor{
                 return javaString;
             }
             if (declaration.getInitializer().getType() == Type.STRING) { //if there is expr and its a string
+                stringSet.add("import edu.ufl.cise.cop4020fa23.runtime.FileURLIO");
                 javaString.append(" = FileURLIO.readImage( ");
-                if (declaration.getNameDef().getDimension() != null) {
-                    javaString.append(declaration.getNameDef().getDimension().visit(this, arg));
-                }
+                javaString.append(declaration.getInitializer().visit(this, arg));
                 javaString.append(" )");
             }
             else if (declaration.getInitializer().getType() == Type.IMAGE) {
+                stringSet.add("import edu.ufl.cise.cop4020fa23.runtime.FileURLIO");
                 if (declaration.getNameDef().getDimension() == null) {
                     javaString.append(" = ImageOps.cloneImage(");
                     javaString.append(declaration.getInitializer().visit(this, arg));
@@ -230,14 +233,18 @@ public class CodeGenVisitor implements ASTVisitor{
                     javaString.append(")");
                 }
             }
-            return javaString;
+            stringSet.add(javaString);
+            return stringSet;
         }
     }
 
     @Override
     public Object visitDimension(Dimension dimension, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitDimension'");
+        StringBuilder javaString = new StringBuilder();
+        javaString.append(dimension.getWidth().visit(this, arg));
+        javaString.append(", ");
+        javaString.append(dimension.getHeight().visit(this, arg));
+        return javaString;
     }
 
     @Override
@@ -345,7 +352,11 @@ public class CodeGenVisitor implements ASTVisitor{
             javaString.append(" ))");
         }
         else if (postfixExpr.pixel() == null && postfixExpr.channel() != null) {
-            javaString.append("ImageOps.extractRed(");
+            javaString.append("ImageOps.extract");
+            javaString.append(postfixExpr.channel().visit(this, arg));
+            javaString.append("( ");
+            javaString.append(postfixExpr.primary().visit(this, arg));
+            javaString.append(" )");
         }
         return javaString;
     }
