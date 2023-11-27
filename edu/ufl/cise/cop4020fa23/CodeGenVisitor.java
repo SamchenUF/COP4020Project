@@ -397,10 +397,27 @@ public class CodeGenVisitor implements ASTVisitor{
         javaString.append("public class ");
         javaString.append((program.getName()));
         javaString.append(" { public static ");
-        if (program.getTypeToken().text().equals("string")) {
-            javaString.append("String");
+       
+        switch(program.getType()) {
+            case IMAGE: 
+                javaString.append("BufferedImage");
+                break;
+            case BOOLEAN:
+                javaString.append("Boolean");
+                break;
+            case INT:
+                javaString.append("int");
+                break;
+            case PIXEL:
+                javaString.append("int");
+                break;
+            case STRING:
+                javaString.append("String");
+                break;
+            case VOID:
+                javaString.append("void");
+                break;
         }
-        else javaString.append(program.getTypeToken().text());
         javaString.append(" apply(");
         List<NameDef> paramList = program.getParams();
         for (NameDef parameters : paramList) {
