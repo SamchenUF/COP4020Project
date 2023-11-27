@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assumptions.abort;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -133,26 +134,35 @@ public class CodeGenVisitor implements ASTVisitor{
     @Override
     public Object visitBlock(Block block, Object arg) throws PLCCompilerException {
         Boolean imported = false;
-        Map<Boolean, StringBuilder> hash = new HashMap<Boolean, StringBuilder>(); 
+        //Map<Boolean, StringBuilder> hash = new HashMap<Boolean, StringBuilder>(); 
+        LinkedHashSet<Object> set = new LinkedHashSet<Object> (); 
         StringBuilder javaString = new StringBuilder();
         javaString.append("{ ");
         List<BlockElem> blockList = block.getElems();
         for (BlockElem elem : blockList) {
-            if (elem instanceof WriteStatement) {
-                imported = true;
+            Object temp = elem.visit(this, arg);
+
+            if (temp instanceof LinkedHashSet) {
+                for (Object itr : (LinkedHashSet)temp) { 
+                    if (itr.toString().contains("import")) {
+                        if (!set.contains(itr)) {
+                        System.out.println("true");
+                        set.add(itr);
+                        }
+                    }
+                    else { 
+                        javaString.append(itr.toString()); 
+                    }
+                } 
             }
-            javaString.append(elem.visit(this, arg));
+            else {
+                javaString.append(temp);
+            }
             javaString.append("; ");
         }
         javaString.append("}");
-        
-        if (imported == false) {
-            return javaString;
-        }
-        else {
-            hash.put(true, javaString);
-            return hash;
-        }
+        set.add(javaString);
+        return set;
     }
 
     @Override
@@ -191,7 +201,7 @@ public class CodeGenVisitor implements ASTVisitor{
     @Override
     public Object visitDeclaration(Declaration declaration, Object arg) throws PLCCompilerException {
         StringBuilder javaString = new StringBuilder();
-        Set<Object> stringSet = new HashSet<Object> ();
+        LinkedHashSet<Object> stringSet = new LinkedHashSet<Object> ();
         if (declaration.getNameDef().getType() != Type.IMAGE) {
             javaString.append(declaration.getNameDef().visit(this, arg));
             if (declaration.getInitializer() == null) {
@@ -218,6 +228,10 @@ public class CodeGenVisitor implements ASTVisitor{
                 stringSet.add("import edu.ufl.cise.cop4020fa23.runtime.FileURLIO");
                 javaString.append(" = FileURLIO.readImage( ");
                 javaString.append(declaration.getInitializer().visit(this, arg));
+                if (declaration.getNameDef().getDimension() != null) {
+                    javaString.append(", ");
+                    javaString.append(declaration.getNameDef().getDimension().visit(this, arg));
+                }
                 javaString.append(" )");
             }
             else if (declaration.getInitializer().getType() == Type.IMAGE) {
@@ -387,15 +401,16 @@ public class CodeGenVisitor implements ASTVisitor{
             }
         }
         javaString.append(") ");
-        if (program.getBlock().visit(this, arg) instanceof Map) {
-            //dont have to worry about the safety as the only map that can be returned from visit is bool, SB
-            Map<Boolean, StringBuilder> hash = (Map)program.getBlock().visit(this, arg);
-            javaString.insert(34, "import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO; ");
-            javaString.append(hash.get(true));
-        }
-        else {
-            javaString.append(program.getBlock().visit(this, arg));
-        }
+        LinkedHashSet <Object> retSet = (LinkedHashSet<Object>)program.getBlock().visit(this, arg);
+        for (Object itr : retSet) { 
+            if (itr.toString().contains("import")) {
+                javaString.insert(34, itr);
+            }
+            else {
+                javaString.append(itr);
+            }
+        } 
+        
         javaString.append(" }");
         return javaString.toString();
     }
@@ -446,12 +461,15 @@ public class CodeGenVisitor implements ASTVisitor{
 
     @Override
     public Object visitWriteStatement(WriteStatement writeStatement, Object arg) throws PLCCompilerException {
-        // Generate Java code for the expression to be written
+        LinkedHashSet<Object> set = new LinkedHashSet<Object> (); 
         StringBuilder javaString = new StringBuilder();
+        set.add("import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO; ");
         javaString.append("ConsoleIO.write(");
         javaString.append(writeStatement.getExpr().visit(this, arg));
         javaString.append(")");
-        return javaString;
+        set.add(javaString);
+        
+        return set;
     }
 
 

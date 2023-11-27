@@ -693,5 +693,20 @@ class CodeGenTest_Hw5_starter {
 				w, h);
 		compareImages(expected, image);
 	}
-
+	@Test
+	void cg4() throws Exception {
+		String input = """
+				int test(int a, string Hello, boolean b)
+				<: 
+				write a;
+				write Hello;
+				write b;
+				^ a;
+				:>
+				""";
+		Object[] params = {4,"hello",true};
+		Object result = PLCLangExec.runCode(packageName,input, 4, "hello", true);
+		show(result);
+		assertEquals(4, result);
+	}	
 }
