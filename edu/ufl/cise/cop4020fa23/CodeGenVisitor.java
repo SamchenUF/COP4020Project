@@ -47,6 +47,7 @@ import edu.ufl.cise.cop4020fa23.exceptions.CodeGenException;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 import edu.ufl.cise.cop4020fa23.runtime.FileURLIO;
 import edu.ufl.cise.cop4020fa23.runtime.ImageOps;
+import edu.ufl.cise.cop4020fa23.runtime.PixelOps;
 
 public class CodeGenVisitor implements ASTVisitor{
     @Override
@@ -269,8 +270,13 @@ public class CodeGenVisitor implements ASTVisitor{
 
     @Override
     public Object visitExpandedPixelExpr(ExpandedPixelExpr expandedPixelExpr, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitExpandedPixelExpr'");
+        StringBuilder javaString = new StringBuilder();
+        javaString.append("PixelOps.pack( ");
+        javaString.append(expandedPixelExpr.getRed().visit(this, arg));
+        javaString.append(expandedPixelExpr.getGreen().visit(this, arg));
+        javaString.append(expandedPixelExpr.getBlue().visit(this, arg));
+        javaString.append(" )");
+        return javaString;
     }
 
     @Override
@@ -337,6 +343,9 @@ public class CodeGenVisitor implements ASTVisitor{
     @Override
     public Object visitPixelSelector(PixelSelector pixelSelector, Object arg) throws PLCCompilerException {
         StringBuilder javaString = new StringBuilder();
+        javaString.append(pixelSelector.xExpr().visit(this, arg));
+        javaString.append(", ");
+        javaString.append(pixelSelector.yExpr().visit(this, arg));
         return javaString;
     }
 
