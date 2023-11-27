@@ -14,9 +14,7 @@ import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO;
 import edu.ufl.cise.cop4020fa23.runtime.FileURLIO;
 import edu.ufl.cise.cop4020fa23.runtime.ImageOps;
 import edu.ufl.cise.cop4020fa23.runtime.PixelOps;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import static org.junit.jupiter.api.Assertions.*;
+
 class CodeGenTest_Hw5_starter {
 
 	String packageName = "edu.ufl.cise.cop4020fa23";
