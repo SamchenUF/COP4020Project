@@ -51,6 +51,18 @@ public class CodeGenVisitor implements ASTVisitor{
     @Override
     public Object visitAssignmentStatement(AssignmentStatement assignmentStatement, Object arg) throws PLCCompilerException {
         StringBuilder javaString = new StringBuilder();
+        if (assignmentStatement.getlValue().getType() == Type.PIXEL && assignmentStatement.getE().getType() == Type.INT) {
+            javaString.append(assignmentStatement.getlValue().visit(this, arg));
+            javaString.append(" = ");
+            javaString.append("PixelOps.pack(");
+            javaString.append(assignmentStatement.getE().visit(this, arg));
+            javaString.append(", ");
+            javaString.append(assignmentStatement.getE().visit(this, arg));
+            javaString.append(", ");
+            javaString.append(assignmentStatement.getE().visit(this, arg));
+            javaString.append(" )");
+            return javaString;
+        }
         javaString.append(assignmentStatement.getlValue().visit(this, arg));
         javaString.append(" = ");
         javaString.append(assignmentStatement.getE().visit(this, arg));
@@ -188,6 +200,9 @@ public class CodeGenVisitor implements ASTVisitor{
                 case RES_green: return "Green";
                 default: break;
             }
+        }
+        else if (arg.equals("LValue")) {
+
         }
         throw new CodeGenException("Unsuporrted");
        
@@ -388,7 +403,7 @@ public class CodeGenVisitor implements ASTVisitor{
     public Object visitPostfixExpr(PostfixExpr postfixExpr, Object arg) throws PLCCompilerException {
         StringBuilder javaString = new StringBuilder();
         if (postfixExpr.getType() == Type.PIXEL) {
-            javaString.append(postfixExpr.channel().visit(this, arg));
+            javaString.append(postfixExpr.channel().visit(this, "PostFixExpr"));
             javaString.append("( ");
             javaString.append(postfixExpr.primary().visit(this, arg));
             javaString.append(" )");
@@ -411,7 +426,7 @@ public class CodeGenVisitor implements ASTVisitor{
         }
         else if (postfixExpr.pixel() == null && postfixExpr.channel() != null) {
             javaString.append("ImageOps.extract");
-            javaString.append(postfixExpr.channel().visit(this, arg));
+            javaString.append(postfixExpr.channel().visit(this, "PostFixExpr"));
             javaString.append("( ");
             javaString.append(postfixExpr.primary().visit(this, arg));
             javaString.append(" )");
