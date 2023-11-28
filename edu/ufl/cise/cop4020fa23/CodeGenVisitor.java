@@ -264,9 +264,18 @@ public class CodeGenVisitor implements ASTVisitor{
 
     @Override
     public Object visitDoStatement(DoStatement doStatement, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitDoStatement'");
+        StringBuilder javaString = new StringBuilder();
+        javaString.append("do {");
+        for (GuardedBlock guardedBlock : doStatement.getGuardedBlocks()) {
+            javaString.append("if (");
+            javaString.append(guardedBlock.getGuard().visit(this, arg));
+            javaString.append(") ");
+            javaString.append(guardedBlock.getBlock().visit(this, arg));
+        }
+        javaString.append("} while(false);");
+        return javaString;
     }
+
 
     @Override
     public Object visitExpandedPixelExpr(ExpandedPixelExpr expandedPixelExpr, Object arg) throws PLCCompilerException {
