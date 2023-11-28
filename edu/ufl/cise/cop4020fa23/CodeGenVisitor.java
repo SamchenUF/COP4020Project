@@ -51,7 +51,8 @@ public class CodeGenVisitor implements ASTVisitor{
     @Override
     public Object visitAssignmentStatement(AssignmentStatement assignmentStatement, Object arg) throws PLCCompilerException {
         StringBuilder javaString = new StringBuilder();
-        if (assignmentStatement.getlValue().getType() == Type.PIXEL && assignmentStatement.getE().getType() == Type.INT) {
+        //Might cause issues since both if and else if statement could both be true not sure
+        if (assignmentStatement.getlValue().getVarType() == Type.PIXEL && assignmentStatement.getE().getType() == Type.INT) {
             javaString.append(assignmentStatement.getlValue().visit(this, arg));
             javaString.append(" = ");
             javaString.append("PixelOps.pack(");
@@ -61,11 +62,24 @@ public class CodeGenVisitor implements ASTVisitor{
             javaString.append(", ");
             javaString.append(assignmentStatement.getE().visit(this, arg));
             javaString.append(" )");
-            return javaString;
         }
-        javaString.append(assignmentStatement.getlValue().visit(this, arg));
-        javaString.append(" = ");
-        javaString.append(assignmentStatement.getE().visit(this, arg));
+
+        else if (assignmentStatement.getlValue().getVarType() == Type.PIXEL && assignmentStatement.getlValue().getChannelSelector() != null) {
+            javaString.append("PixelOps.set");
+            //System.out.println("running");
+            javaString.append(assignmentStatement.getlValue().getChannelSelector().visit(this, "LValue"));
+            javaString.append("(");
+            javaString.append(assignmentStatement.getlValue().visit(this, arg));
+            javaString.append(", ");
+            javaString.append(assignmentStatement.getE());
+            javaString.append(")");
+        } 
+        else {
+            System.out.println("running");
+            javaString.append(assignmentStatement.getlValue().visit(this, arg));
+            javaString.append(" = ");
+            javaString.append(assignmentStatement.getE().visit(this, arg));
+        }
         return javaString;
     }
 
@@ -195,17 +209,21 @@ public class CodeGenVisitor implements ASTVisitor{
     public Object visitChannelSelector(ChannelSelector channelSelector, Object arg) throws PLCCompilerException {
         if (arg.equals("PostFixExpr")) {
             switch (channelSelector.color()) {
+                case RES_red: return "red";
+                case RES_blue: return "blue";
+                case RES_green: return "green";
+                default: break;
+            }
+        }
+        else if (arg.equals("LValue")) {
+            switch (channelSelector.color()) {
                 case RES_red: return "Red";
                 case RES_blue: return "Blue";
                 case RES_green: return "Green";
                 default: break;
             }
         }
-        else if (arg.equals("LValue")) {
-
-        }
         throw new CodeGenException("Unsuporrted");
-       
     }
 
     @Override
@@ -425,7 +443,12 @@ public class CodeGenVisitor implements ASTVisitor{
             javaString.append(" ))");
         }
         else if (postfixExpr.pixel() == null && postfixExpr.channel() != null) {
-            javaString.append("ImageOps.extract");
+            /* javaString.append("ImageOps.extract");
+            javaString.append(postfixExpr.channel().visit(this, "PostFixExpr"));
+            javaString.append("( ");
+            javaString.append(postfixExpr.primary().visit(this, arg));
+            javaString.append(" )"); */
+            javaString.append("PixelOps.");
             javaString.append(postfixExpr.channel().visit(this, "PostFixExpr"));
             javaString.append("( ");
             javaString.append(postfixExpr.primary().visit(this, arg));
@@ -444,7 +467,7 @@ public class CodeGenVisitor implements ASTVisitor{
             javaString.append("; ");
         }
 
-        javaString.append("public class ");
+        javaString.append('\n' + "public class ");
         javaString.append((program.getName()));
         javaString.append(" { public static ");
        
@@ -480,16 +503,16 @@ public class CodeGenVisitor implements ASTVisitor{
         
         javaString.append(program.getBlock().visit(this, arg));
         if (javaString.indexOf("ConsoleIO.write") != -1) {
-            javaString.insert(34, "import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO; ");
+            javaString.insert(34, '\n' + "import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO; ");
         }
         if (javaString.indexOf("ImageOps.") != -1) {
-            javaString.insert(34, "import edu.ufl.cise.cop4020fa23.runtime.ImageOps; ");
+            javaString.insert(34, '\n'+ "import edu.ufl.cise.cop4020fa23.runtime.ImageOps; ");
         }
         if (javaString.indexOf("FILEURLIO.") != -1) {
-            javaString.insert(34, "import edu.ufl.cise.cop4020fa23.runtime.FILEURLIO; ");
+            javaString.insert(34, '\n' + "import edu.ufl.cise.cop4020fa23.runtime.FILEURLIO; ");
         }
         if (javaString.indexOf("PixelOps.") != -1) {
-            javaString.insert(34, "import edu.ufl.cise.cop4020fa23.runtime.PixelOps; ");
+            javaString.insert(34, '\n' + "import edu.ufl.cise.cop4020fa23.runtime.PixelOps; ");
         }
         javaString.append(" }");
         return javaString.toString();
