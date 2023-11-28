@@ -244,56 +244,55 @@ public class CodeGenVisitor implements ASTVisitor{
     @Override
     public Object visitDeclaration(Declaration declaration, Object arg) throws PLCCompilerException {
         StringBuilder javaString = new StringBuilder();
-       
+
         if (declaration.getNameDef().getType() != Type.IMAGE) {
+            // Non-image types
             javaString.append(declaration.getNameDef().visit(this, arg));
             if (declaration.getInitializer() == null) {
                 return javaString;
             }
             javaString.append(" = ");
             javaString.append(declaration.getInitializer().visit(this, arg));
-            return javaString;
-        }
-        else {
-            //NameDef type is image
+        } else {
+            // Handle image type declarations
             javaString.append("final BufferedImage ");
-            javaString.append(declaration.getNameDef().getJavaName()); 
-            if (declaration.getInitializer() == null) { //case for when namedef is image but no expr
+            javaString.append(declaration.getNameDef().getJavaName());
+
+            if (declaration.getInitializer() == null) {
+                // No initializer but dimensions are specified
                 if (declaration.getNameDef().getDimension() == null) {
                     throw new CodeGenException("No dimension in declaration");
                 }
                 javaString.append(" = ImageOps.makeImage(");
                 javaString.append(declaration.getNameDef().getDimension().visit(this, arg));
                 javaString.append(")");
-                return javaString;
-            }
-            if (declaration.getInitializer().getType() == Type.STRING) { //if there is expr and its a string
-                //stringSet.add("import edu.ufl.cise.cop4020fa23.runtime.FileURLIO");
-                javaString.append(" = FileURLIO.readImage( ");
-                javaString.append(declaration.getInitializer().visit(this, arg));
-                if (declaration.getNameDef().getDimension() != null) {
-                    javaString.append(", ");
-                    javaString.append(declaration.getNameDef().getDimension().visit(this, arg));
-                }
-                javaString.append(" )");
-            }
-            else if (declaration.getInitializer().getType() == Type.IMAGE) {
-                //stringSet.add("import edu.ufl.cise.cop4020fa23.runtime.FileURLIO");
-                if (declaration.getNameDef().getDimension() == null) {
-                    javaString.append(" = ImageOps.cloneImage(");
+            } else {
+                // Initializer is provided
+                if (declaration.getInitializer().getType() == Type.STRING) {
+                    // Initializer is a URL string
+                    javaString.append(" = FileURLIO.readImage(");
                     javaString.append(declaration.getInitializer().visit(this, arg));
+                    if (declaration.getNameDef().getDimension() != null) {
+                        javaString.append(", ");
+                        javaString.append(declaration.getNameDef().getDimension().visit(this, arg));
+                    }
                     javaString.append(")");
-                }
-                else {
+                } else if (declaration.getInitializer().getType() == Type.IMAGE) {
+                    // Initializer is another image (possibly involving scaling and resizing)
                     javaString.append(" = ImageOps.copyAndResize(");
+                    javaString.append("ImageOps.binaryImageScalarOp(ImageOps.OP.TIMES, ");
                     javaString.append(declaration.getInitializer().visit(this, arg));
+                    javaString.append(", factor");
+                            javaString.append("), ");
+                    javaString.append("w, h"); 
                     javaString.append(")");
                 }
             }
-            //stringSet.add(javaString);
-            return javaString;
         }
+        return javaString;
     }
+
+
 
     @Override
     public Object visitDimension(Dimension dimension, Object arg) throws PLCCompilerException {
