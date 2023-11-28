@@ -271,9 +271,18 @@ public class CodeGenVisitor implements ASTVisitor{
 
     @Override
     public Object visitDoStatement(DoStatement doStatement, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitDoStatement'");
+        StringBuilder javaString = new StringBuilder();
+        javaString.append("do {");
+        for (GuardedBlock guardedBlock : doStatement.getGuardedBlocks()) {
+            javaString.append("if (");
+            javaString.append(guardedBlock.getGuard().visit(this, arg));
+            javaString.append(") ");
+            javaString.append(guardedBlock.getBlock().visit(this, arg));
+        }
+        javaString.append("} while(false);");
+        return javaString;
     }
+
 
     @Override
     public Object visitExpandedPixelExpr(ExpandedPixelExpr expandedPixelExpr, Object arg) throws PLCCompilerException {
@@ -293,9 +302,14 @@ public class CodeGenVisitor implements ASTVisitor{
 
     @Override
     public Object visitGuardedBlock(GuardedBlock guardedBlock, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitGuardedBlock'");
+        StringBuilder javaString = new StringBuilder();
+        javaString.append("if (");
+        javaString.append(guardedBlock.getGuard().visit(this, arg));
+        javaString.append(") ");
+        javaString.append(guardedBlock.getBlock().visit(this, arg));
+        return javaString;
     }
+
 
     @Override
     public Object visitIdentExpr(IdentExpr identExpr, Object arg) throws PLCCompilerException {
@@ -306,9 +320,18 @@ public class CodeGenVisitor implements ASTVisitor{
 
     @Override
     public Object visitIfStatement(IfStatement ifStatement, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitIfStatement'");
+        StringBuilder javaString = new StringBuilder();
+        boolean isFirst = true;
+        for (GuardedBlock guardedBlock : ifStatement.getGuardedBlocks()) {
+            if (!isFirst) {
+                javaString.append(" else ");
+            }
+            isFirst = false;
+            javaString.append(guardedBlock.visit(this, arg));
+        }
+        return javaString;
     }
+
 
     @Override
     public Object visitLValue(LValue lValue, Object arg) throws PLCCompilerException {
