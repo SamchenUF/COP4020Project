@@ -445,11 +445,6 @@ public class CodeGenVisitor implements ASTVisitor{
             javaString.append(" ))");
         }
         else if (postfixExpr.pixel() == null && postfixExpr.channel() != null) {
-            /* javaString.append("ImageOps.extract");
-            javaString.append(postfixExpr.channel().visit(this, "PostFixExpr"));
-            javaString.append("( ");
-            javaString.append(postfixExpr.primary().visit(this, arg));
-            javaString.append(" )"); */
             javaString.append("PixelOps.");
             javaString.append(postfixExpr.channel().visit(this, "PostFixExpr"));
             javaString.append("( ");
@@ -510,11 +505,14 @@ public class CodeGenVisitor implements ASTVisitor{
         if (javaString.indexOf("ImageOps.") != -1) {
             javaString.insert(34, '\n'+ "import edu.ufl.cise.cop4020fa23.runtime.ImageOps; ");
         }
-        if (javaString.indexOf("FILEURLIO.") != -1) {
-            javaString.insert(34, '\n' + "import edu.ufl.cise.cop4020fa23.runtime.FILEURLIO; ");
+        if (javaString.indexOf("FileURLIO.") != -1) {
+            javaString.insert(34, '\n' + "import edu.ufl.cise.cop4020fa23.runtime.FileURLIO; ");
         }
         if (javaString.indexOf("PixelOps.") != -1) {
             javaString.insert(34, '\n' + "import edu.ufl.cise.cop4020fa23.runtime.PixelOps; ");
+        }
+         if (javaString.indexOf("BufferedImage") != -1) {
+            javaString.insert(34, '\n' + "import java.awt.image.BufferedImage; ");
         }
         javaString.append(" }");
         return javaString.toString();
