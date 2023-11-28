@@ -76,7 +76,24 @@ public class CodeGenVisitor implements ASTVisitor{
             javaString.append(assignmentStatement.getE().visit(this, arg));
             javaString.append(" )");
         }
-
+        else if (assignmentStatement.getlValue().getVarType() == Type.PIXEL) {
+            if (assignmentStatement.getlValue().getChannelSelector() == null) {
+                if (assignmentStatement.getlValue().getPixelSelector() == null) {
+                    if (assignmentStatement.getE().getType() == Type.IMAGE) {
+                        javaString.append(assignmentStatement.getlValue().visit(this, arg));
+                        javaString.append(" = ");
+                        javaString.append("ImageOps.copyInto(");
+                        javaString.append(assignmentStatement.getE().visit(this, arg));
+                        javaString.append(")");
+                    }
+                }
+                else {
+                    
+                }
+            }
+            else throw new CodeGenException("DUMMY CODE");
+            
+        } 
         else {
             javaString.append(assignmentStatement.getlValue().visit(this, arg));
             javaString.append(" = ");
@@ -187,9 +204,6 @@ public class CodeGenVisitor implements ASTVisitor{
 
     @Override
     public Object visitBlock(Block block, Object arg) throws PLCCompilerException {
-        Boolean imported = false;
-       
-       
         StringBuilder javaString = new StringBuilder();
         javaString.append("{ ");
         List<BlockElem> blockList = block.getElems();
@@ -256,8 +270,10 @@ public class CodeGenVisitor implements ASTVisitor{
         }
         else {
             //NameDef type is image
-            javaString.append("final BufferedImage ");
+            
+            javaString.append("BufferedImage ");
             javaString.append(declaration.getNameDef().getJavaName()); 
+            System.out.println(declaration.getInitializer().getType());
             if (declaration.getInitializer() == null) { //case for when namedef is image but no expr
                 if (declaration.getNameDef().getDimension() == null) {
                     throw new CodeGenException("No dimension in declaration");
@@ -267,7 +283,7 @@ public class CodeGenVisitor implements ASTVisitor{
                 javaString.append(")");
                 return javaString;
             }
-            if (declaration.getInitializer().getType() == Type.STRING) { //if there is expr and its a string
+            else if (declaration.getInitializer().getType() == Type.STRING) { //if there is expr and its a string
                 //stringSet.add("import edu.ufl.cise.cop4020fa23.runtime.FileURLIO");
                 javaString.append(" = FileURLIO.readImage( ");
                 javaString.append(declaration.getInitializer().visit(this, arg));
@@ -280,6 +296,7 @@ public class CodeGenVisitor implements ASTVisitor{
             else if (declaration.getInitializer().getType() == Type.IMAGE) {
                 //stringSet.add("import edu.ufl.cise.cop4020fa23.runtime.FileURLIO");
                 if (declaration.getNameDef().getDimension() == null) {
+                    System.out.println(declaration.getNameDef().getDimension());
                     javaString.append(" = ImageOps.cloneImage(");
                     javaString.append(declaration.getInitializer().visit(this, arg));
                     javaString.append(")");
