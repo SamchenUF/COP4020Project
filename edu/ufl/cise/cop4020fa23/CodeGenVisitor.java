@@ -1,5 +1,6 @@
 package edu.ufl.cise.cop4020fa23;
 
+import static edu.ufl.cise.cop4020fa23.Kind.PLUS;
 import static edu.ufl.cise.cop4020fa23.Kind.STRING_LIT;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -7,12 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.junit.jupiter.api.Assumptions.abort;
 
 import java.awt.image.BufferedImage;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
+
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import edu.ufl.cise.cop4020fa23.ast.ASTVisitor;
 import edu.ufl.cise.cop4020fa23.ast.AssignmentStatement;
@@ -48,6 +45,7 @@ import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 import edu.ufl.cise.cop4020fa23.runtime.FileURLIO;
 import edu.ufl.cise.cop4020fa23.runtime.ImageOps;
 import edu.ufl.cise.cop4020fa23.runtime.PixelOps;
+import edu.ufl.cise.cop4020fa23.runtime.ImageOps.OP;
 
 public class CodeGenVisitor implements ASTVisitor{
     @Override
@@ -62,6 +60,78 @@ public class CodeGenVisitor implements ASTVisitor{
     @Override
     public Object visitBinaryExpr(BinaryExpr binaryExpr, Object arg) throws PLCCompilerException {
         StringBuilder javaString = new StringBuilder();
+        
+        if (binaryExpr.getLeftExpr().getType() == Type.IMAGE && binaryExpr.getRightExpr().getType() == Type.IMAGE) {
+            javaString.append("ImageOps.binaryImageImageOp(ImageOps.OP.");
+            javaString.append(binaryExpr.getOpKind());
+            javaString.append(", ");
+            javaString.append(binaryExpr.getLeftExpr().visit(this, arg));
+            javaString.append(", ");
+            javaString.append(binaryExpr.getRightExpr().visit(this, arg));
+            javaString.append(")");
+            return javaString;
+        }
+        if (binaryExpr.getLeftExpr().getType() == Type.IMAGE && binaryExpr.getRightExpr().getType() == Type.PIXEL) {
+           
+            javaString.append("ImageOps.binaryImagePixelOp(ImageOps.OP.");
+            javaString.append(binaryExpr.getOpKind());
+            javaString.append(", ");
+            javaString.append(binaryExpr.getLeftExpr().visit(this, arg));
+            javaString.append(", ");
+            javaString.append(binaryExpr.getRightExpr().visit(this, arg));
+            javaString.append(")");
+    
+            return javaString;
+        }
+        if (binaryExpr.getLeftExpr().getType() == Type.IMAGE && binaryExpr.getRightExpr().getType() == Type.INT) {
+       
+            javaString.append("ImageOps.binaryImageScalarOp(ImageOps.OP.");
+            javaString.append(binaryExpr.getOpKind());
+            javaString.append(", ");
+            javaString.append(binaryExpr.getLeftExpr().visit(this, arg));
+            javaString.append(", ");
+            javaString.append(binaryExpr.getRightExpr().visit(this, arg));
+            javaString.append(")");
+
+            return javaString;
+        }
+        if (binaryExpr.getLeftExpr().getType() == Type.PIXEL && binaryExpr.getRightExpr().getType() == Type.PIXEL) {
+  
+            javaString.append("ImageOps.binaryPackedPixelPixelOp(ImageOps.OP.");
+            javaString.append(binaryExpr.getOpKind());
+            javaString.append(", ");
+            javaString.append(binaryExpr.getLeftExpr().visit(this, arg));
+            javaString.append(", ");
+            javaString.append(binaryExpr.getRightExpr().visit(this, arg));
+            javaString.append(")");
+ 
+            return javaString;
+        }
+        if (binaryExpr.getLeftExpr().getType() == Type.PIXEL && binaryExpr.getRightExpr().getType() == Type.INT) {
+  
+            javaString.append("ImageOps.binaryPackedPixelIntOp(ImageOps.OP.");
+            javaString.append(binaryExpr.getOpKind());
+            javaString.append(", ");
+            javaString.append(binaryExpr.getLeftExpr().visit(this, arg));
+            javaString.append(", ");
+            javaString.append(binaryExpr.getRightExpr().visit(this, arg));
+            javaString.append(")");
+
+            return javaString;
+        }
+        if (binaryExpr.getLeftExpr().getType() == Type.PIXEL && binaryExpr.getRightExpr().getType() == Type.BOOLEAN) {
+
+            javaString.append("binaryPackedPixelBooleanOp(");
+            javaString.append("ImageOps.binaryPackedPixelBooleanOp(ImageOps.OP.");
+            javaString.append(binaryExpr.getOpKind());
+            javaString.append(", ");
+            javaString.append(binaryExpr.getLeftExpr().visit(this, arg));
+            javaString.append(", ");
+            javaString.append(binaryExpr.getRightExpr().visit(this, arg));
+            javaString.append(")");
+   
+            return javaString;
+        }
         if (binaryExpr.getLeftExpr().getType() == Type.STRING && binaryExpr.getOpKind() == Kind.EQ) {
             javaString.append(binaryExpr.getLeftExpr().visit(this, arg));
             javaString.append(".equals(");
@@ -80,52 +150,7 @@ public class CodeGenVisitor implements ASTVisitor{
         javaString.append("(");
         javaString.append(binaryExpr.getLeftExpr().visit(this, arg));
         javaString.append(" ");
-        switch (binaryExpr.getOpKind()) {
-            case BITAND:
-                javaString.append("&");
-                break;
-            case BITOR:
-                javaString.append("|");
-                break;
-            case AND:
-                javaString.append("&&");
-                break;
-            case OR:
-                javaString.append("||");
-                break;
-            case LT:
-                javaString.append("<");
-                break;
-            case GT:
-                javaString.append(">");
-                break;
-            case GE:
-                javaString.append(">=");
-                break;
-            case LE:
-                javaString.append("<=");
-                break;
-            case EQ: 
-                javaString.append("==");
-                break;
-            case PLUS:
-                javaString.append("+");
-                break;
-            case MINUS:
-                javaString.append("-");
-                break;
-            case TIMES:
-                javaString.append("*");
-                break;
-            case DIV:
-                javaString.append("/");
-                break;
-            case MOD:
-                javaString.append("%");
-                break;
-            default:
-                break;
-        }
+        javaString.append(binaryExpr.getOpKind());
         javaString.append(" ");
         javaString.append(binaryExpr.getRightExpr().visit(this, arg));
         javaString.append(")");
@@ -135,40 +160,22 @@ public class CodeGenVisitor implements ASTVisitor{
     @Override
     public Object visitBlock(Block block, Object arg) throws PLCCompilerException {
         Boolean imported = false;
-        //Map<Boolean, StringBuilder> hash = new HashMap<Boolean, StringBuilder>(); 
-        LinkedHashSet<Object> set = new LinkedHashSet<Object> (); 
+       
+       
         StringBuilder javaString = new StringBuilder();
         javaString.append("{ ");
         List<BlockElem> blockList = block.getElems();
         for (BlockElem elem : blockList) {
-            Object temp = elem.visit(this, arg);
-
-            if (temp instanceof LinkedHashSet) {
-                for (Object itr : (LinkedHashSet)temp) { 
-                    if (itr.toString().contains("import")) {
-                        if (!set.contains(itr)) {
-                        System.out.println("true");
-                        set.add(itr);
-                        }
-                    }
-                    else { 
-                        javaString.append(itr.toString()); 
-                    }
-                } 
-            }
-            else {
-                javaString.append(temp);
-            }
+            javaString.append(elem.visit(this, arg));
             javaString.append("; ");
         }
         javaString.append("}");
-        set.add(javaString);
-        return set;
+       
+        return javaString;
     }
 
     @Override
     public Object visitBlockStatement(StatementBlock statementBlock, Object arg) throws PLCCompilerException {
-    
         return statementBlock.getBlock().visit(this, arg);
     }
 
@@ -202,7 +209,7 @@ public class CodeGenVisitor implements ASTVisitor{
     @Override
     public Object visitDeclaration(Declaration declaration, Object arg) throws PLCCompilerException {
         StringBuilder javaString = new StringBuilder();
-        LinkedHashSet<Object> stringSet = new LinkedHashSet<Object> ();
+       
         if (declaration.getNameDef().getType() != Type.IMAGE) {
             javaString.append(declaration.getNameDef().visit(this, arg));
             if (declaration.getInitializer() == null) {
@@ -226,7 +233,7 @@ public class CodeGenVisitor implements ASTVisitor{
                 return javaString;
             }
             if (declaration.getInitializer().getType() == Type.STRING) { //if there is expr and its a string
-                stringSet.add("import edu.ufl.cise.cop4020fa23.runtime.FileURLIO");
+                //stringSet.add("import edu.ufl.cise.cop4020fa23.runtime.FileURLIO");
                 javaString.append(" = FileURLIO.readImage( ");
                 javaString.append(declaration.getInitializer().visit(this, arg));
                 if (declaration.getNameDef().getDimension() != null) {
@@ -236,7 +243,7 @@ public class CodeGenVisitor implements ASTVisitor{
                 javaString.append(" )");
             }
             else if (declaration.getInitializer().getType() == Type.IMAGE) {
-                stringSet.add("import edu.ufl.cise.cop4020fa23.runtime.FileURLIO");
+                //stringSet.add("import edu.ufl.cise.cop4020fa23.runtime.FileURLIO");
                 if (declaration.getNameDef().getDimension() == null) {
                     javaString.append(" = ImageOps.cloneImage(");
                     javaString.append(declaration.getInitializer().visit(this, arg));
@@ -248,8 +255,8 @@ public class CodeGenVisitor implements ASTVisitor{
                     javaString.append(")");
                 }
             }
-            stringSet.add(javaString);
-            return stringSet;
+            //stringSet.add(javaString);
+            return javaString;
         }
     }
 
@@ -271,11 +278,16 @@ public class CodeGenVisitor implements ASTVisitor{
     @Override
     public Object visitExpandedPixelExpr(ExpandedPixelExpr expandedPixelExpr, Object arg) throws PLCCompilerException {
         StringBuilder javaString = new StringBuilder();
+
+ 
         javaString.append("PixelOps.pack( ");
         javaString.append(expandedPixelExpr.getRed().visit(this, arg));
+        javaString.append(", ");
         javaString.append(expandedPixelExpr.getGreen().visit(this, arg));
+        javaString.append(", ");
         javaString.append(expandedPixelExpr.getBlue().visit(this, arg));
         javaString.append(" )");
+      
         return javaString;
     }
 
@@ -427,16 +439,20 @@ public class CodeGenVisitor implements ASTVisitor{
             }
         }
         javaString.append(") ");
-        LinkedHashSet <Object> retSet = (LinkedHashSet<Object>)program.getBlock().visit(this, arg);
-        for (Object itr : retSet) { 
-            if (itr.toString().contains("import")) {
-                javaString.insert(34, itr);
-            }
-            else {
-                javaString.append(itr);
-            }
-        } 
         
+        javaString.append(program.getBlock().visit(this, arg));
+        if (javaString.indexOf("ConsoleIO.write") != -1) {
+            javaString.insert(34, "import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO; ");
+        }
+        if (javaString.indexOf("ImageOps.") != -1) {
+            javaString.insert(34, "import edu.ufl.cise.cop4020fa23.runtime.ImageOps; ");
+        }
+        if (javaString.indexOf("FILEURLIO.") != -1) {
+            javaString.insert(34, "import edu.ufl.cise.cop4020fa23.runtime.FILEURLIO; ");
+        }
+        if (javaString.indexOf("PixelOps.") != -1) {
+            javaString.insert(34, "import edu.ufl.cise.cop4020fa23.runtime.PixelOps; ");
+        }
         javaString.append(" }");
         return javaString.toString();
     }
@@ -487,15 +503,11 @@ public class CodeGenVisitor implements ASTVisitor{
 
     @Override
     public Object visitWriteStatement(WriteStatement writeStatement, Object arg) throws PLCCompilerException {
-        LinkedHashSet<Object> set = new LinkedHashSet<Object> (); 
         StringBuilder javaString = new StringBuilder();
-        set.add("import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO; ");
         javaString.append("ConsoleIO.write(");
         javaString.append(writeStatement.getExpr().visit(this, arg));
         javaString.append(")");
-        set.add(javaString);
-        
-        return set;
+        return javaString;
     }
 
 

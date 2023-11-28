@@ -365,5 +365,4 @@ public class ImageOps {
 		default -> throw new IllegalArgumentException("Compiler/runtime error Unexpected value: " + op);
 		};		
 	}
-		
 	}
