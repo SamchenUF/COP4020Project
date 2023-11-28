@@ -52,7 +52,20 @@ public class CodeGenVisitor implements ASTVisitor{
     public Object visitAssignmentStatement(AssignmentStatement assignmentStatement, Object arg) throws PLCCompilerException {
         StringBuilder javaString = new StringBuilder();
         //Might cause issues since both if and else if statement could both be true not sure
-        if (assignmentStatement.getlValue().getVarType() == Type.PIXEL && assignmentStatement.getE().getType() == Type.INT) {
+      
+        if (assignmentStatement.getlValue().getVarType() == Type.PIXEL && assignmentStatement.getlValue().getChannelSelector() != null) {
+            javaString.append(assignmentStatement.getlValue().visit(this, arg));
+            javaString.append(" = ");
+
+            javaString.append("PixelOps.set");
+            javaString.append(assignmentStatement.getlValue().getChannelSelector().visit(this, "LValue"));
+            javaString.append("(");
+            javaString.append(assignmentStatement.getlValue().visit(this, arg));
+            javaString.append(", ");
+            javaString.append(assignmentStatement.getE().visit(this, arg));
+            javaString.append(")");
+        } 
+        else if (assignmentStatement.getlValue().getVarType() == Type.PIXEL && assignmentStatement.getE().getType() == Type.INT) {
             javaString.append(assignmentStatement.getlValue().visit(this, arg));
             javaString.append(" = ");
             javaString.append("PixelOps.pack(");
@@ -64,18 +77,7 @@ public class CodeGenVisitor implements ASTVisitor{
             javaString.append(" )");
         }
 
-        else if (assignmentStatement.getlValue().getVarType() == Type.PIXEL && assignmentStatement.getlValue().getChannelSelector() != null) {
-            javaString.append("PixelOps.set");
-            //System.out.println("running");
-            javaString.append(assignmentStatement.getlValue().getChannelSelector().visit(this, "LValue"));
-            javaString.append("(");
-            javaString.append(assignmentStatement.getlValue().visit(this, arg));
-            javaString.append(", ");
-            javaString.append(assignmentStatement.getE());
-            javaString.append(")");
-        } 
         else {
-            System.out.println("running");
             javaString.append(assignmentStatement.getlValue().visit(this, arg));
             javaString.append(" = ");
             javaString.append(assignmentStatement.getE().visit(this, arg));
@@ -565,7 +567,12 @@ public class CodeGenVisitor implements ASTVisitor{
     @Override
     public Object visitWriteStatement(WriteStatement writeStatement, Object arg) throws PLCCompilerException {
         StringBuilder javaString = new StringBuilder();
-        javaString.append("ConsoleIO.write(");
+        if (writeStatement.getExpr().getType() == Type.INT) {
+            javaString.append("ConsoleIO.writePixel(");
+        }
+        else {
+            javaString.append("ConsoleIO.write(");
+        }
         javaString.append(writeStatement.getExpr().visit(this, arg));
         javaString.append(")");
         return javaString;
