@@ -290,9 +290,14 @@ public class CodeGenVisitor implements ASTVisitor{
 
     @Override
     public Object visitGuardedBlock(GuardedBlock guardedBlock, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitGuardedBlock'");
+        StringBuilder javaString = new StringBuilder();
+        javaString.append("if (");
+        javaString.append(guardedBlock.getGuard().visit(this, arg));
+        javaString.append(") ");
+        javaString.append(guardedBlock.getBlock().visit(this, arg));
+        return javaString;
     }
+
 
     @Override
     public Object visitIdentExpr(IdentExpr identExpr, Object arg) throws PLCCompilerException {
