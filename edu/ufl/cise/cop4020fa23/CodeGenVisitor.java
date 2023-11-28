@@ -52,11 +52,9 @@ public class CodeGenVisitor implements ASTVisitor{
     public Object visitAssignmentStatement(AssignmentStatement assignmentStatement, Object arg) throws PLCCompilerException {
         StringBuilder javaString = new StringBuilder();
         //Might cause issues since both if and else if statement could both be true not sure
-      
         if (assignmentStatement.getlValue().getVarType() == Type.PIXEL && assignmentStatement.getlValue().getChannelSelector() != null) {
             javaString.append(assignmentStatement.getlValue().visit(this, arg));
             javaString.append(" = ");
-
             javaString.append("PixelOps.set");
             javaString.append(assignmentStatement.getlValue().getChannelSelector().visit(this, "LValue"));
             javaString.append("(");
@@ -76,7 +74,7 @@ public class CodeGenVisitor implements ASTVisitor{
             javaString.append(assignmentStatement.getE().visit(this, arg));
             javaString.append(" )");
         }
-        else if (assignmentStatement.getlValue().getVarType() == Type.PIXEL) {
+        else if (assignmentStatement.getlValue().getVarType() == Type.IMAGE) {
             if (assignmentStatement.getlValue().getChannelSelector() == null) {
                 if (assignmentStatement.getlValue().getPixelSelector() == null) {
                     if (assignmentStatement.getE().getType() == Type.IMAGE) {
@@ -261,15 +259,18 @@ public class CodeGenVisitor implements ASTVisitor{
 
         if (declaration.getNameDef().getType() != Type.IMAGE) {
             // Non-image types
+           
             javaString.append(declaration.getNameDef().visit(this, arg));
             if (declaration.getInitializer() == null) {
                 return javaString;
             }
+             System.out.println("running");
             javaString.append(" = ");
             javaString.append(declaration.getInitializer().visit(this, arg));
-        } else {
+            } 
+        else {
             // Handle image type declarations
-            javaString.append("final BufferedImage ");
+            javaString.append("BufferedImage ");
             javaString.append(declaration.getNameDef().getJavaName());
 
             if (declaration.getInitializer() == null) {

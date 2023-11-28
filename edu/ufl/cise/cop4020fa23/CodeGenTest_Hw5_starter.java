@@ -28,7 +28,7 @@ class CodeGenTest_Hw5_starter {
 	// makes it easy to turn output on and off (and less typing than
 	// System.out.println)
 	static final boolean VERBOSE = true;
-	static final boolean WAIT_FOR_INPUT = true;
+	static final boolean WAIT_FOR_INPUT = false;
 
 	void show(Object obj) {
 		if (VERBOSE) {
@@ -285,8 +285,9 @@ class CodeGenTest_Hw5_starter {
 	 * 
 	 * package edu.ufl.cise.cop4020fa23; import java.awt.image.BufferedImage; import
 	 * edu.ufl.cise.cop4020fa23.runtime.ImageOps; import
-	 * edu.ufl.cise.cop4020fa23.runtime.FileURLIO; public class f{ public static
-	 * BufferedImage apply(String url$1){ BufferedImage
+	 * edu.ufl.cise.cop4020fa23.runtime.FileURLIO; 
+	 * public class f{ 
+	 * public static BufferedImage apply(String url$1){ BufferedImage
 	 * i$2=FileURLIO.readImage(url$1); return i$2; } }
 	 */
 	@Test
