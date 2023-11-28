@@ -308,9 +308,18 @@ public class CodeGenVisitor implements ASTVisitor{
 
     @Override
     public Object visitIfStatement(IfStatement ifStatement, Object arg) throws PLCCompilerException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitIfStatement'");
+        StringBuilder javaString = new StringBuilder();
+        boolean isFirst = true;
+        for (GuardedBlock guardedBlock : ifStatement.getGuardedBlocks()) {
+            if (!isFirst) {
+                javaString.append(" else ");
+            }
+            isFirst = false;
+            javaString.append(guardedBlock.visit(this, arg));
+        }
+        return javaString;
     }
+
 
     @Override
     public Object visitLValue(LValue lValue, Object arg) throws PLCCompilerException {
