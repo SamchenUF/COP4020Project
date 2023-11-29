@@ -155,6 +155,7 @@ public class CodeGenVisitor implements ASTVisitor{
         StringBuilder javaString = new StringBuilder();
         
         if (binaryExpr.getLeftExpr().getType() == Type.IMAGE && binaryExpr.getRightExpr().getType() == Type.IMAGE) {
+   
             javaString.append("ImageOps.binaryImageImageOp(ImageOps.OP.");
             javaString.append(binaryExpr.getOpKind());
             javaString.append(", ");
@@ -188,7 +189,7 @@ public class CodeGenVisitor implements ASTVisitor{
 
             return javaString;
         }
-        if (binaryExpr.getLeftExpr().getType() == Type.PIXEL && binaryExpr.getRightExpr().getType() == Type.PIXEL) {
+        if (binaryExpr.getLeftExpr().getType() == Type.PIXEL && binaryExpr.getRightExpr().getType() == Type.PIXEL && binaryExpr.getOpKind() != Kind.EQ) {
   
             javaString.append("ImageOps.binaryPackedPixelPixelOp(ImageOps.OP.");
             javaString.append(binaryExpr.getOpKind());
@@ -201,7 +202,6 @@ public class CodeGenVisitor implements ASTVisitor{
             return javaString;
         }
         if (binaryExpr.getLeftExpr().getType() == Type.PIXEL && binaryExpr.getRightExpr().getType() == Type.INT) {
-  
             javaString.append("ImageOps.binaryPackedPixelIntOp(ImageOps.OP.");
             javaString.append(binaryExpr.getOpKind());
             javaString.append(", ");
@@ -212,11 +212,12 @@ public class CodeGenVisitor implements ASTVisitor{
 
             return javaString;
         }
-        if (binaryExpr.getLeftExpr().getType() == Type.PIXEL && binaryExpr.getRightExpr().getType() == Type.BOOLEAN) {
-
-            javaString.append("binaryPackedPixelBooleanOp(");
-            javaString.append("ImageOps.binaryPackedPixelBooleanOp(ImageOps.OP.");
+        if (binaryExpr.getLeftExpr().getType() == Type.PIXEL && binaryExpr.getRightExpr().getType() == Type.PIXEL && binaryExpr.getOpKind() == Kind.EQ) {
+            System.out.println("run");
+                    // if (binaryExpr.getOpKind() !=  Kind.EQ || binaryExpr.getOpKind() != Kind.)
+            javaString.append("ImageOps.binaryPackedPixelBooleanOp(ImageOps.BoolOP.");
             javaString.append(binaryExpr.getOpKind());
+            javaString.append("UALS");
             javaString.append(", ");
             javaString.append(binaryExpr.getLeftExpr().visit(this, arg));
             javaString.append(", ");
@@ -380,14 +381,14 @@ public class CodeGenVisitor implements ASTVisitor{
     @Override
     public Object visitDoStatement(DoStatement doStatement, Object arg) throws PLCCompilerException {
         StringBuilder javaString = new StringBuilder();
-        javaString.append("do {");
-        for (GuardedBlock guardedBlock : doStatement.getGuardedBlocks()) {
-            javaString.append("if (");
-            javaString.append(guardedBlock.getGuard().visit(this, arg));
-            javaString.append(") ");
-            javaString.append(guardedBlock.getBlock().visit(this, arg));
+        javaString.append("{ boolean continue" + "$");
+        javaString.append(" = false; while(!continue$0) {continue$0 = true;");
+
+        List<GuardedBlock> guardedList = doStatement.getGuardedBlocks();
+        for (GuardedBlock elem : guardedList) {
+            javaString.append(elem.visit(this, "do"));
         }
-        javaString.append("} while(false);");
+        javaString.append(" } };");
         return javaString;
     }
 
@@ -395,8 +396,6 @@ public class CodeGenVisitor implements ASTVisitor{
     @Override
     public Object visitExpandedPixelExpr(ExpandedPixelExpr expandedPixelExpr, Object arg) throws PLCCompilerException {
         StringBuilder javaString = new StringBuilder();
-
- 
         javaString.append("PixelOps.pack( ");
         javaString.append(expandedPixelExpr.getRed().visit(this, arg));
         javaString.append(", ");
@@ -411,10 +410,20 @@ public class CodeGenVisitor implements ASTVisitor{
     @Override
     public Object visitGuardedBlock(GuardedBlock guardedBlock, Object arg) throws PLCCompilerException {
         StringBuilder javaString = new StringBuilder();
-        javaString.append("if (");
-        javaString.append(guardedBlock.getGuard().visit(this, arg));
-        javaString.append(") ");
-        javaString.append(guardedBlock.getBlock().visit(this, arg));
+        if (arg.equals("do")) {
+            javaString.append("if (");
+            javaString.append(guardedBlock.getGuard().visit(this, arg));
+            javaString.append(") ");
+            javaString.append("{ continue$0 = false; {");
+            javaString.append(guardedBlock.getBlock().visit(this, arg));
+            javaString.append("} }");
+        }
+        else {
+            javaString.append("if (");
+            javaString.append(guardedBlock.getGuard().visit(this, arg));
+            javaString.append(") ");
+            javaString.append(guardedBlock.getBlock().visit(this, arg));
+        }
         return javaString;
     }
 
@@ -613,12 +622,12 @@ public class CodeGenVisitor implements ASTVisitor{
             case RES_height:
                 javaString.append("(");
                 javaString.append(unaryExpr.getExpr().visit(this, arg));
-                javaString.append(".getHeight())");
+                javaString.append(".getHeight()))");
                 return javaString;
             case RES_width:
                 javaString.append("(");
                 javaString.append(unaryExpr.getExpr().visit(this, arg));
-                javaString.append(".getWidth())");
+                javaString.append(".getWidth()))");
                 return javaString;
             default:
                 break;
@@ -631,7 +640,7 @@ public class CodeGenVisitor implements ASTVisitor{
     @Override
     public Object visitWriteStatement(WriteStatement writeStatement, Object arg) throws PLCCompilerException {
         StringBuilder javaString = new StringBuilder();
-        if (writeStatement.getExpr().getType() == Type.INT) {
+        if (writeStatement.getExpr().getType() == Type.PIXEL) {
             javaString.append("ConsoleIO.writePixel(");
         }
         else {
