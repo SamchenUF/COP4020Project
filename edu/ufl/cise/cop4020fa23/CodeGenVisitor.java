@@ -330,7 +330,8 @@ public class CodeGenVisitor implements ASTVisitor{
                 javaString.append(" = ImageOps.makeImage(");
                 javaString.append(declaration.getNameDef().getDimension().visit(this, arg));
                 javaString.append(")");
-            } else {
+            } 
+            else {
                 javaString.append("BufferedImage ");
                 javaString.append(declaration.getNameDef().getJavaName());
 
@@ -344,15 +345,23 @@ public class CodeGenVisitor implements ASTVisitor{
                         javaString.append(declaration.getNameDef().getDimension().visit(this, arg));
                     }
                     javaString.append(")");
-                } else if (declaration.getInitializer().getType() == Type.IMAGE) {
+                } 
+                else if (declaration.getInitializer().getType() == Type.IMAGE) {
+                    if (declaration.getNameDef().getDimension() == null) {
+                        javaString.append(" = ImageOps.cloneImage(");
+                        javaString.append(declaration.getInitializer().visit(this, arg));
+                        javaString.append(")");
+                    }
                     // Initializer is another image (possibly involving scaling and resizing)
-                    javaString.append(" = ImageOps.copyAndResize(");
-                    javaString.append("ImageOps.binaryImageScalarOp(ImageOps.OP.TIMES, ");
-                    javaString.append(declaration.getInitializer().visit(this, arg));
-                    javaString.append(", factor");
-                            javaString.append("), ");
-                    javaString.append("w, h"); 
-                    javaString.append(")");
+                    else {
+                        javaString.append(" = ImageOps.copyAndResize(");
+                        javaString.append(declaration.getInitializer().visit(this, arg));
+                        javaString.append(", ");
+                        javaString.append(declaration.getNameDef().getDimension().visit(this, arg));
+                        javaString.append(")");
+                    }
+                    
+                   
                 }
             }
         }
