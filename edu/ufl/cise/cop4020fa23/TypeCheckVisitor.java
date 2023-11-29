@@ -277,16 +277,25 @@ public class TypeCheckVisitor implements ASTVisitor{
             boolean yTypeB = pixelSelector.yExpr() instanceof IdentExpr;
             //check if x and y are ident or numlitexpr
             if ((xTypeB || pixelSelector.yExpr() instanceof NumLitExpr) && (yTypeB || pixelSelector.yExpr() instanceof NumLitExpr)) {
-                IdentExpr temp = (IdentExpr) pixelSelector.xExpr();
-                IdentExpr temp2 = (IdentExpr) pixelSelector.yExpr();
+                String temp = "temp";
+                String temp2 = "temp2";
+                if (xTypeB) {
+                    IdentExpr trash = (IdentExpr) pixelSelector.xExpr();
+                    temp = trash.getName();
+                }
+                if (yTypeB) {
+                    IdentExpr trash2 = (IdentExpr) pixelSelector.yExpr();
+                    temp2 = trash2.getName();
+                }
+                
                 //if x doesnt exist in symboltable then add it as a synthetic name def do same for y
-                if (xTypeB && ST.lookup(temp.getName()) == null) {
-                    SyntheticNameDef hole = new SyntheticNameDef(temp.getName());
+                if (xTypeB && ST.lookup(temp) == null) {
+                    SyntheticNameDef hole = new SyntheticNameDef(temp);
                     hole.setJavaName(hole.getName()+"$n" + Integer.toString(ST.getScope()));
                     ST.add(hole.getName(), hole);
                 }
-                if (yTypeB && ST.lookup(temp2.getName()) == null) {
-                    SyntheticNameDef hole = new SyntheticNameDef(temp2.getName());
+                if (yTypeB && ST.lookup(temp2) == null) {
+                    SyntheticNameDef hole = new SyntheticNameDef(temp2);
                     hole.setJavaName(hole.getName()+"$n" + Integer.toString(ST.getScope()));
                     ST.add(hole.getName(), hole);
                 }

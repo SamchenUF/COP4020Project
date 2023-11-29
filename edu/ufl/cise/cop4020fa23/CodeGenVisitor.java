@@ -381,8 +381,7 @@ public class CodeGenVisitor implements ASTVisitor{
     @Override
     public Object visitDoStatement(DoStatement doStatement, Object arg) throws PLCCompilerException {
         StringBuilder javaString = new StringBuilder();
-        javaString.append("{ boolean continue" + "$");
-        javaString.append(" = false; while(!continue$0) {continue$0 = true;");
+        javaString.append("{ boolean continue$0 = false; while(!continue$0) {continue$0 = true;");
 
         List<GuardedBlock> guardedList = doStatement.getGuardedBlocks();
         for (GuardedBlock elem : guardedList) {
