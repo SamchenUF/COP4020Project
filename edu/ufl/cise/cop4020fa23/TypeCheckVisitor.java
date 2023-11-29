@@ -281,10 +281,14 @@ public class TypeCheckVisitor implements ASTVisitor{
                 IdentExpr temp2 = (IdentExpr) pixelSelector.yExpr();
                 //if x doesnt exist in symboltable then add it as a synthetic name def do same for y
                 if (xTypeB && ST.lookup(temp.getName()) == null) {
-                    ST.add(temp.getName(), new SyntheticNameDef(temp.getName()));
+                    SyntheticNameDef hole = new SyntheticNameDef(temp.getName());
+                    hole.setJavaName(hole.getName()+"$n" + Integer.toString(ST.getScope()));
+                    ST.add(hole.getName(), hole);
                 }
                 if (yTypeB && ST.lookup(temp2.getName()) == null) {
-                    ST.add(temp2.getName(), new SyntheticNameDef(temp2.getName()));
+                    SyntheticNameDef hole = new SyntheticNameDef(temp2.getName());
+                    hole.setJavaName(hole.getName()+"$n" + Integer.toString(ST.getScope()));
+                    ST.add(hole.getName(), hole);
                 }
             }
         }

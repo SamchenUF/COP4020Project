@@ -106,28 +106,34 @@ public class CodeGenVisitor implements ASTVisitor{
                 }
                 else {
                     javaString.append("for (");
-                    IdentExpr tempx = (IdentExpr)assignmentStatement.getlValue().getPixelSelector().xExpr();
-                    IdentExpr tempy = (IdentExpr)assignmentStatement.getlValue().getPixelSelector().yExpr();
-                    javaString.append(tempx.getName());
+                    javaString.append(assignmentStatement.getlValue().getPixelSelector().xExpr().getType().name().toLowerCase());
+                    javaString.append(" ");
+                    javaString.append(assignmentStatement.getlValue().getPixelSelector().xExpr().visit(this, arg));
                     javaString.append(" = 0; ");
-                    javaString.append(tempx.getName());
+                    javaString.append(assignmentStatement.getlValue().getPixelSelector().xExpr().visit(this, arg));
                     javaString.append(" < ");
-                    javaString.append(assignmentStatement.getlValue().getName());
+                    javaString.append(assignmentStatement.getlValue().visit(this, arg));
                     javaString.append(".getWidth(); ");
-                    javaString.append(tempx.getName());
+                    javaString.append(assignmentStatement.getlValue().getPixelSelector().xExpr().visit(this, arg));
                     javaString.append("++)" + '\n' + "{");
 
                     javaString.append("for (");
-                    javaString.append(tempy.getName());
+                    javaString.append(assignmentStatement.getlValue().getPixelSelector().xExpr().getType().name().toLowerCase());
+                    javaString.append(" ");
+                    javaString.append(assignmentStatement.getlValue().getPixelSelector().yExpr().visit(this, arg));
                     javaString.append(" = 0; ");
-                    javaString.append(tempy.getName());
+                    javaString.append(assignmentStatement.getlValue().getPixelSelector().yExpr().visit(this, arg));
                     javaString.append(" < ");
-                    javaString.append(assignmentStatement.getlValue().getName());
+                    javaString.append(assignmentStatement.getlValue().visit(this, arg));
                     javaString.append(".getHeight(); ");
-                    javaString.append(tempy.getName());
+                    javaString.append(assignmentStatement.getlValue().getPixelSelector().yExpr().visit(this, arg));
                     javaString.append("++)" + '\n' + "{");
                     javaString.append("ImageOps.setRGB(");
-                    javaString.append(assignmentStatement.getlValue().getName());
+                    javaString.append(assignmentStatement.getlValue().visit(this, arg));
+                    javaString.append(", ");
+                    javaString.append(assignmentStatement.getlValue().getPixelSelector().xExpr().visit(this, arg));
+                    javaString.append(", ");
+                    javaString.append(assignmentStatement.getlValue().getPixelSelector().yExpr().visit(this, arg));
                     javaString.append(", ");
                     javaString.append(assignmentStatement.getE().visit(this, arg));
                     javaString.append(");" + '\n' + "}" + '\n' + "}");
@@ -319,7 +325,7 @@ public class CodeGenVisitor implements ASTVisitor{
                 if (declaration.getNameDef().getDimension() == null) {
                     throw new CodeGenException("No dimension in declaration");
                 }
-                javaString.append("Final BufferedImage ");
+                javaString.append("final BufferedImage ");
                 javaString.append(declaration.getNameDef().getJavaName());
                 javaString.append(" = ImageOps.makeImage(");
                 javaString.append(declaration.getNameDef().getDimension().visit(this, arg));
