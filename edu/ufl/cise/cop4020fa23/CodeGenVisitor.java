@@ -85,7 +85,7 @@ public class CodeGenVisitor implements ASTVisitor{
                         javaString.append(")");
                     }
                     if (assignmentStatement.getE().getType() == Type.PIXEL) {
-                        javaString.append(assignmentStatement.getlValue().visit(this, arg));
+                        
                         javaString.append("ImageOps.setAllPixels(");
                         javaString.append(assignmentStatement.getlValue().visit(this, arg));
                         javaString.append(", ");
@@ -309,15 +309,13 @@ public class CodeGenVisitor implements ASTVisitor{
 
         if (declaration.getNameDef().getType() != Type.IMAGE) {
             // Non-image types
-           
             javaString.append(declaration.getNameDef().visit(this, arg));
             if (declaration.getInitializer() == null) {
                 return javaString;
             }
-             System.out.println("running");
             javaString.append(" = ");
             javaString.append(declaration.getInitializer().visit(this, arg));
-            } 
+        } 
         else {
             // Handle image type declarations
             if (declaration.getInitializer() == null) {
@@ -497,13 +495,6 @@ public class CodeGenVisitor implements ASTVisitor{
     @Override
     public Object visitPostfixExpr(PostfixExpr postfixExpr, Object arg) throws PLCCompilerException {
         StringBuilder javaString = new StringBuilder();
-        if (postfixExpr.getType() == Type.PIXEL) {
-            javaString.append(postfixExpr.channel().visit(this, "PostFixExpr"));
-            javaString.append("( ");
-            javaString.append(postfixExpr.primary().visit(this, arg));
-            javaString.append(" )");
-            return javaString;
-        }
         if (postfixExpr.pixel() != null && postfixExpr.channel() == null) {
             javaString.append("ImageOps.getRGB(");
             javaString.append(postfixExpr.primary().visit(this, arg));
