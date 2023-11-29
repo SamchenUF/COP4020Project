@@ -78,15 +78,59 @@ public class CodeGenVisitor implements ASTVisitor{
             if (assignmentStatement.getlValue().getChannelSelector() == null) {
                 if (assignmentStatement.getlValue().getPixelSelector() == null) {
                     if (assignmentStatement.getE().getType() == Type.IMAGE) {
-                        javaString.append(assignmentStatement.getlValue().visit(this, arg));
-                        javaString.append(" = ");
                         javaString.append("ImageOps.copyInto(");
+                        javaString.append(assignmentStatement.getE().visit(this, arg));
+                        javaString.append(", ");
+                        javaString.append(assignmentStatement.getlValue().visit(this, arg));
+                        javaString.append(")");
+                    }
+                    if (assignmentStatement.getE().getType() == Type.PIXEL) {
+                        javaString.append(assignmentStatement.getlValue().visit(this, arg));
+                        javaString.append("ImageOps.setAllPixels(");
+                        javaString.append(assignmentStatement.getlValue().visit(this, arg));
+                        javaString.append(", ");
                         javaString.append(assignmentStatement.getE().visit(this, arg));
                         javaString.append(")");
                     }
+                    if (assignmentStatement.getE().getType() == Type.STRING) {
+                        javaString.append("ImageOps.copyInto(");
+                        javaString.append("FileURLIO.readImage(");
+                        javaString.append(assignmentStatement.getE().visit(this, arg));
+                        javaString.append(", ");
+                        javaString.append(assignmentStatement.getlValue().getNameDef().getDimension().visit(this, arg));
+                        javaString.append("), ");
+                        javaString.append(assignmentStatement.getlValue().visit(this, arg));
+                        javaString.append(")");
+                    }
+
                 }
                 else {
-                    
+                    javaString.append("for (");
+                    IdentExpr tempx = (IdentExpr)assignmentStatement.getlValue().getPixelSelector().xExpr();
+                    IdentExpr tempy = (IdentExpr)assignmentStatement.getlValue().getPixelSelector().yExpr();
+                    javaString.append(tempx.getName());
+                    javaString.append(" = 0; ");
+                    javaString.append(tempx.getName());
+                    javaString.append(" < ");
+                    javaString.append(assignmentStatement.getlValue().getName());
+                    javaString.append(".getWidth(); ");
+                    javaString.append(tempx.getName());
+                    javaString.append("++)" + '\n' + "{");
+
+                    javaString.append("for (");
+                    javaString.append(tempy.getName());
+                    javaString.append(" = 0; ");
+                    javaString.append(tempy.getName());
+                    javaString.append(" < ");
+                    javaString.append(assignmentStatement.getlValue().getName());
+                    javaString.append(".getHeight(); ");
+                    javaString.append(tempy.getName());
+                    javaString.append("++)" + '\n' + "{");
+                    javaString.append("ImageOps.setRGB(");
+                    javaString.append(assignmentStatement.getlValue().getName());
+                    javaString.append(", ");
+                    javaString.append(assignmentStatement.getE().visit(this, arg));
+                    javaString.append(");" + '\n' + "}" + '\n' + "}");
                 }
             }
             else throw new CodeGenException("DUMMY CODE");
@@ -270,18 +314,20 @@ public class CodeGenVisitor implements ASTVisitor{
             } 
         else {
             // Handle image type declarations
-            javaString.append("BufferedImage ");
-            javaString.append(declaration.getNameDef().getJavaName());
-
             if (declaration.getInitializer() == null) {
                 // No initializer but dimensions are specified
                 if (declaration.getNameDef().getDimension() == null) {
                     throw new CodeGenException("No dimension in declaration");
                 }
+                javaString.append("Final BufferedImage ");
+                javaString.append(declaration.getNameDef().getJavaName());
                 javaString.append(" = ImageOps.makeImage(");
                 javaString.append(declaration.getNameDef().getDimension().visit(this, arg));
                 javaString.append(")");
             } else {
+                javaString.append("BufferedImage ");
+                javaString.append(declaration.getNameDef().getJavaName());
+
                 // Initializer is provided
                 if (declaration.getInitializer().getType() == Type.STRING) {
                     // Initializer is a URL string
