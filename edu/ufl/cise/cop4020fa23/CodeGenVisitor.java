@@ -243,7 +243,7 @@ public class CodeGenVisitor implements ASTVisitor{
         javaString.append("(");
         javaString.append(binaryExpr.getLeftExpr().visit(this, arg));
         javaString.append(" ");
-        javaString.append(binaryExpr.getOpKind());
+        javaString.append(binaryExpr.getOp().text());
         javaString.append(" ");
         javaString.append(binaryExpr.getRightExpr().visit(this, arg));
         javaString.append(")");
