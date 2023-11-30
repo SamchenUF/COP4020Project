@@ -277,8 +277,8 @@ public class TypeCheckVisitor implements ASTVisitor{
             boolean yTypeB = pixelSelector.yExpr() instanceof IdentExpr;
             //check if x and y are ident or numlitexpr
             if ((xTypeB || pixelSelector.yExpr() instanceof NumLitExpr) && (yTypeB || pixelSelector.yExpr() instanceof NumLitExpr)) {
-                String temp = "temp";
-                String temp2 = "temp2";
+                String temp = "";
+                String temp2 = "";
                 if (xTypeB) {
                     IdentExpr trash = (IdentExpr) pixelSelector.xExpr();
                     temp = trash.getName();
@@ -295,9 +295,9 @@ public class TypeCheckVisitor implements ASTVisitor{
                     ST.add(hole.getName(), hole);
                 }
                 if (yTypeB && ST.lookup(temp2) == null) {
-                    SyntheticNameDef hole = new SyntheticNameDef(temp2);
-                    hole.setJavaName(hole.getName()+"$n" + Integer.toString(ST.getScope()));
-                    ST.add(hole.getName(), hole);
+                    SyntheticNameDef holey = new SyntheticNameDef(temp2);
+                    holey.setJavaName(holey.getName()+"$n" + Integer.toString(ST.getScope()));
+                    ST.add(holey.getName(), holey);
                 }
             }
         }

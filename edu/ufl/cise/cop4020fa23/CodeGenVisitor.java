@@ -105,6 +105,64 @@ public class CodeGenVisitor implements ASTVisitor{
 
                 }
                 else {
+                    if (assignmentStatement.getlValue().getPixelSelector().xExpr() instanceof NumLitExpr) {
+                        if (assignmentStatement.getlValue().getPixelSelector().yExpr() instanceof NumLitExpr) {
+                            javaString.append("ImageOps.setRGB(");
+                            javaString.append(assignmentStatement.getlValue().visit(this, arg));
+                            javaString.append(", ");
+                            javaString.append(assignmentStatement.getlValue().getPixelSelector().xExpr().visit(this, arg));
+                            javaString.append(", ");
+                            javaString.append(assignmentStatement.getlValue().getPixelSelector().yExpr().visit(this, arg));
+                            javaString.append(", ");
+                            javaString.append(assignmentStatement.getE().visit(this, arg));
+                            javaString.append(");");
+                            return javaString;
+                        }
+                        javaString.append("for (");
+                        javaString.append(assignmentStatement.getlValue().getPixelSelector().yExpr().getType().name().toLowerCase());
+                        javaString.append(" ");
+                        javaString.append(assignmentStatement.getlValue().getPixelSelector().yExpr().visit(this, arg));
+                        javaString.append(" = 0; ");
+                        javaString.append(assignmentStatement.getlValue().getPixelSelector().yExpr().visit(this, arg));
+                        javaString.append(" < ");
+                        javaString.append(assignmentStatement.getlValue().visit(this, arg));
+                        javaString.append(".getHeight(); ");
+                        javaString.append(assignmentStatement.getlValue().getPixelSelector().yExpr().visit(this, arg));
+                        javaString.append("++)" + '\n' + "{");
+                        javaString.append("ImageOps.setRGB(");
+                        javaString.append(assignmentStatement.getlValue().visit(this, arg));
+                        javaString.append(", ");
+                        javaString.append(assignmentStatement.getlValue().getPixelSelector().xExpr().visit(this, arg));
+                        javaString.append(", ");
+                        javaString.append(assignmentStatement.getlValue().getPixelSelector().yExpr().visit(this, arg));
+                        javaString.append(", ");
+                        javaString.append(assignmentStatement.getE().visit(this, arg));
+                        javaString.append(");" + '\n' + "}");
+                        return javaString;
+                    }
+                    if (assignmentStatement.getlValue().getPixelSelector().yExpr() instanceof NumLitExpr) {
+                        javaString.append("for (");
+                        javaString.append(assignmentStatement.getlValue().getPixelSelector().xExpr().getType().name().toLowerCase());
+                        javaString.append(" ");
+                        javaString.append(assignmentStatement.getlValue().getPixelSelector().xExpr().visit(this, arg));
+                        javaString.append(" = 0; ");
+                        javaString.append(assignmentStatement.getlValue().getPixelSelector().xExpr().visit(this, arg));
+                        javaString.append(" < ");
+                        javaString.append(assignmentStatement.getlValue().visit(this, arg));
+                        javaString.append(".getWidth(); ");
+                        javaString.append(assignmentStatement.getlValue().getPixelSelector().xExpr().visit(this, arg));
+                        javaString.append("++)" + '\n' + "{");
+                        javaString.append("ImageOps.setRGB(");
+                        javaString.append(assignmentStatement.getlValue().visit(this, arg));
+                        javaString.append(", ");
+                        javaString.append(assignmentStatement.getlValue().getPixelSelector().xExpr().visit(this, arg));
+                        javaString.append(", ");
+                        javaString.append(assignmentStatement.getlValue().getPixelSelector().xExpr().visit(this, arg));
+                        javaString.append(", ");
+                        javaString.append(assignmentStatement.getE().visit(this, arg));
+                        javaString.append(");" + '\n' + "}");
+                        return javaString;
+                    }
                     javaString.append("for (");
                     javaString.append(assignmentStatement.getlValue().getPixelSelector().xExpr().getType().name().toLowerCase());
                     javaString.append(" ");
@@ -118,7 +176,7 @@ public class CodeGenVisitor implements ASTVisitor{
                     javaString.append("++)" + '\n' + "{");
 
                     javaString.append("for (");
-                    javaString.append(assignmentStatement.getlValue().getPixelSelector().xExpr().getType().name().toLowerCase());
+                    javaString.append(assignmentStatement.getlValue().getPixelSelector().yExpr().getType().name().toLowerCase());
                     javaString.append(" ");
                     javaString.append(assignmentStatement.getlValue().getPixelSelector().yExpr().visit(this, arg));
                     javaString.append(" = 0; ");
@@ -213,7 +271,6 @@ public class CodeGenVisitor implements ASTVisitor{
             return javaString;
         }
         if (binaryExpr.getLeftExpr().getType() == Type.PIXEL && binaryExpr.getRightExpr().getType() == Type.PIXEL && binaryExpr.getOpKind() == Kind.EQ) {
-            System.out.println("run");
                     // if (binaryExpr.getOpKind() !=  Kind.EQ || binaryExpr.getOpKind() != Kind.)
             javaString.append("ImageOps.binaryPackedPixelBooleanOp(ImageOps.BoolOP.");
             javaString.append(binaryExpr.getOpKind());
@@ -503,7 +560,14 @@ public class CodeGenVisitor implements ASTVisitor{
     @Override
     public Object visitPostfixExpr(PostfixExpr postfixExpr, Object arg) throws PLCCompilerException {
         StringBuilder javaString = new StringBuilder();
-        if (postfixExpr.pixel() != null && postfixExpr.channel() == null) {
+        if (postfixExpr.primary().getType() == Type.PIXEL) {
+            javaString.append("PixelOps.");
+            javaString.append(postfixExpr.channel().visit(this, "PostFixExpr"));
+            javaString.append("(");
+            javaString.append(postfixExpr.primary().visit(this, arg));
+            javaString.append(")");
+        }
+        else if (postfixExpr.pixel() != null && postfixExpr.channel() == null) {
             javaString.append("ImageOps.getRGB(");
             javaString.append(postfixExpr.primary().visit(this, arg));
             javaString.append(", ");
@@ -511,6 +575,7 @@ public class CodeGenVisitor implements ASTVisitor{
             javaString.append(" )");
         }
         else if (postfixExpr.pixel() != null && postfixExpr.channel() != null) {
+            javaString.append("PixelOps.");
             javaString.append(postfixExpr.channel().visit(this, "PostFixExpr"));
             javaString.append(" (ImageOps.getRGB( ");
             javaString.append(postfixExpr.primary().visit(this, arg));
@@ -519,8 +584,8 @@ public class CodeGenVisitor implements ASTVisitor{
             javaString.append(" ))");
         }
         else if (postfixExpr.pixel() == null && postfixExpr.channel() != null) {
-            javaString.append("PixelOps.");
-            javaString.append(postfixExpr.channel().visit(this, "PostFixExpr"));
+            javaString.append("ImageOps.extract");
+            javaString.append(postfixExpr.channel().visit(this, "LValue"));
             javaString.append("( ");
             javaString.append(postfixExpr.primary().visit(this, arg));
             javaString.append(" )");

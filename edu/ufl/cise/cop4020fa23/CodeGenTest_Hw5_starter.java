@@ -1052,7 +1052,7 @@ class CodeGenTest_Hw5_starter {
                 []
                    a < b -> <: b = b-a; :>
                 od;
-                ^a;
+                ^b;
                 :>
                 """;
         int gcd = (Integer) PLCLangExec.runCode(packageName, source, 10, 15);
@@ -1210,24 +1210,26 @@ class CodeGenTest_Hw5_starter {
 
 
 // I currently can’t get this testcase to pass, but I wrote what I think should pass
-    @Test
-    void assignImageToImage() throws Exception {
-        String source = """
-                image test(string url, int w, int h) <:
-                   image[w,h] im0 = url;
-                   image[w/2,h/2] im1;
-                   im1 = im0;
-                   ^im1;
-                   :>
-                   """;
-        String url = testURL;
-        int w = 200;
-        int h = 300;
-        BufferedImage expected = FileURLIO.readImage(url);
-        expected = ImageOps.copyAndResize(expected, w/2, h/2);
-        BufferedImage output = (BufferedImage) PLCLangExec.runCode(packageName, source, url, w, h);
-        compareImages(expected, output);
-    }
+@Test
+void assignImageToImage() throws Exception {
+	String source = """
+			image test(string url, int w, int h) <:
+			   image[w,h] im0 = url;
+			   image[w/2,h/2] im1;
+			   im1 = im0;
+			   ^im1;
+			   :>
+			   """;
+	String url = testURL;
+	int w = 200;
+	int h = 300;
+	BufferedImage expected = FileURLIO.readImage(url, w, h);
+	expected = ImageOps.copyAndResize(expected, w/2, h/2);
+	BufferedImage output = (BufferedImage) PLCLangExec.runCode(packageName, source, url, w, h);
+	compareImages(expected, output);
+}
+
+
 
 
     @Test
@@ -1270,6 +1272,7 @@ class CodeGenTest_Hw5_starter {
         int w = 512;
         int h = 512;
         int result = (int) PLCLangExec.runCode(packageName, source, w, h);
+		System.out.println(result);
         assertEquals(result, 50);
     }
 
